@@ -1,6 +1,6 @@
 class Sensor:
 	
-	def __init__(self, id):
+	def __init__(self, id, x, y, z):
 		self.id = id
 		self.value = 0.0
 		self.x = 0

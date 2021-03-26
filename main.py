@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 from Room import Room
 from Sensor import Sensor
+from Program import Program
 
 
 def createSensorLayout(sensor):
@@ -44,15 +45,19 @@ def createRoomLayout(room):
 
 sg.theme('LightGreen1')   # Add a touch of color
 # All the stuff inside your window.
-room = Room('test');
-room.addSensor(Sensor('testsen1'))
-room.addSensor(Sensor('testsen2'))
-room.addSensor(Sensor('testsen3'))
+program = Program('http://localhost:5000')
 
-roomLayout = createRoomLayout(room)
+program.addRoomsFromNetwork()
 
-layout = [  [sg.TabGroup([[sg.Tab('test', roomLayout)]])],
-			[sg.Button('Ok')]
+rooms = program.getRooms()
+
+roomLayouts = [[]]
+
+for room in rooms:
+	roomLayouts[0].append(sg.Tab('room '+str(room.getId()), createRoomLayout(room)))
+
+
+layout = [  [sg.TabGroup(roomLayouts)]
 		]
 
 
@@ -64,8 +69,6 @@ while True:
     event, values = window.read()
     if event == sg.WIN_CLOSED: # if user closes window or clicks cancel
         break
-    if event == 'Ok':
-
 
 window.close()
 

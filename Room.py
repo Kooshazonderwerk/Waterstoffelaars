@@ -2,12 +2,14 @@ from Sensor import Sensor
 
 class Room:
 
-	def __init__(self, id):
+	def __init__(self, id, lenght=0, width=0, height=0, sensors=[]):
 		self.sensorList = []
 		self.id = id
-		self.lenght = 0
-		self.width = 0
-		self.height = 0
+		self.lenght = lenght
+		self.width = width
+		self.height = height
+		for sensor in sensors:
+			self.addSensor(Sensor(sensor['id'], sensor['x'], sensor['y'], sensor['z']))
 
 	'''Takes a object of type Sensor and adds it to the list of sensors'''
 	def addSensor(self, sensor):
