@@ -15,7 +15,7 @@ class Program:
 
 	def addRoomsFromNetwork(self):
 		rooms = self.network.getRooms()
-
+		self.rooms = []
 		for room in rooms:
 			self.addRoom(room)
 

@@ -49,64 +49,69 @@ def changeWindow(window, layout, newLayout):
 	window[f'-COL{newLayout}-'].update(visible=True)
 	return newLayout
 
+def initWindow(program):
+	program.addRoomsFromNetwork()
+
+	rooms = program.getRooms()
+
+	roomLayouts = [[]]
+
+	for room in rooms:
+		roomLayouts[0].append(sg.Tab('room '+str(room.getId()), createRoomLayout(room)))
+
+
+	#Room options layout
+	roomOptionsLayout = [
+		[sg.B('Create Room', key='createNewRoom')]
+	]
+	#main layout
+	mainLayout = [  
+		[sg.Frame('', roomOptionsLayout)],
+		[sg.TabGroup(roomLayouts)]
+		]
+
+
+
+	#Room edit page layout
+	roomNameLayout = [
+		[sg.InputText(key='roomName')]
+	]
+
+	roomDimensionsLayout = [
+		[sg.T('Width:')],
+		[sg.InputText(key='roomWidth')],
+		[sg.T('Length:')],
+		[sg.InputText(key='roomLength')],
+		[sg.T('Height:')],
+		[sg.InputText(key='roomHeight')]
+	]
+
+	roomEditButtonsLayout = [
+		[sg.B('Save and Exit', key='roomSaveExit')],
+		[sg.B('Discard and Exit', key='roomDiscard')]
+	]
+
+	roomEditLayout = [
+		[sg.Frame('Name', roomNameLayout)],
+		[sg.Frame('Dimensions', roomDimensionsLayout)],
+		[sg.Frame('', roomEditButtonsLayout)]
+	]
+
+	roomEdit = [
+		[sg.Frame('RoomInfo',roomEditLayout )]
+	]
+
+	# Create the Window
+	layout = [[sg.Column(mainLayout, key='-COL1-', visible=True), sg.Column(roomEdit, visible=False, key='-COL2-')],
+		]
+
+	return layout
+
 sg.theme('LightGreen1')   # Add a touch of color
 # All the stuff inside your window.
 program = Program('http://localhost:5000')
 
-program.addRoomsFromNetwork()
-
-rooms = program.getRooms()
-
-roomLayouts = [[]]
-
-for room in rooms:
-	roomLayouts[0].append(sg.Tab('room '+str(room.getId()), createRoomLayout(room)))
-
-
-#Room options layout
-roomOptionsLayout = [
-	[sg.B('Create Room', key='createNewRoom')]
-]
-#main layout
-mainLayout = [  
-	[sg.Frame('', roomOptionsLayout)],
-	[sg.TabGroup(roomLayouts)]
-	]
-
-
-
-#Room edit page layout
-roomNameLayout = [
-	[sg.InputText(key='roomName')]
-]
-
-roomDimensionsLayout = [
-	[sg.T('Width:')],
-	[sg.InputText(key='roomWidth')],
-	[sg.T('Length:')],
-	[sg.InputText(key='roomLength')],
-	[sg.T('Height:')],
-	[sg.InputText(key='roomHeight')]
-]
-
-roomEditButtonsLayout = [
-	[sg.B('Save and Exit', key='roomSaveExit')],
-	[sg.B('Discard and Exit', key='roomDiscard')]
-]
-
-roomEditLayout = [
-	[sg.Frame('Name', roomNameLayout)],
-	[sg.Frame('Dimensions', roomDimensionsLayout)],
-	[sg.Frame('', roomEditButtonsLayout)]
-]
-
-roomEdit = [
-	[sg.Frame('RoomInfo',roomEditLayout )]
-]
-
-# Create the Window
-layout = [[sg.Column(mainLayout, key='-COL1-', visible=True), sg.Column(roomEdit, visible=False, key='-COL2-')],
-	]
+layout = initWindow(program)
 
 window = sg.Window('Window Title', layout)
 
@@ -122,8 +127,17 @@ while True:
 	if layout == 2: # checking if current window is on the edit page.
 		if event == 'roomSaveExit':
 			sendRoomData(values)
-			layout = changeWindow(window, layout, 1)
+			layout = 1
+			tempLayout = initWindow(program)
+			window1 = sg.Window('Window Title', tempLayout)
+			window.close()
+			window = window1
+
 		if event == 'roomDiscard':
 			layout = changeWindow(window, layout, 1)
 
 window.close()
+
+
+
+	
