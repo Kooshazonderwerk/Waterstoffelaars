@@ -8,4 +8,15 @@ class Network:
 
 	def getRooms(self):
 		rooms = requests.get(self.url+'/room/all').json()
+		print(rooms)
 		return rooms
+	
+	def createRoom(self, name, width, height, length):
+		rawData = {
+			'name': name,
+			'width': width,
+			'length': length,
+			'height': height,
+		}
+		data = json.dumps(rawData)
+		requests.post(self.url+'/room', json=rawData)

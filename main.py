@@ -22,7 +22,7 @@ def createRoomLayout(room):
 		[]
 	]
 	roomInfoFrameLayout = [
-		[sg.T('room id: ' + room.getId())]
+		[sg.T('room id: ' + str(room.getId()))]
 	]
 
 	graphicsViewLayout = [
@@ -41,7 +41,13 @@ def createRoomLayout(room):
 	]
 	return roomLayout
 
+def sendRoomData(values):
+	program.createRoom(values['roomName'], values['roomWidth'],values['roomHeight'],values['roomLength'])
 
+def changeWindow(window, layout, newLayout):
+	window[f'-COL{layout}-'].update(visible=False)
+	window[f'-COL{newLayout}-'].update(visible=True)
+	return newLayout
 
 sg.theme('LightGreen1')   # Add a touch of color
 # All the stuff inside your window.
@@ -57,18 +63,67 @@ for room in rooms:
 	roomLayouts[0].append(sg.Tab('room '+str(room.getId()), createRoomLayout(room)))
 
 
-layout = [  [sg.TabGroup(roomLayouts)]
-		]
+#Room options layout
+roomOptionsLayout = [
+	[sg.B('Create Room', key='createNewRoom')]
+]
+#main layout
+mainLayout = [  
+	[sg.Frame('', roomOptionsLayout)],
+	[sg.TabGroup(roomLayouts)]
+	]
 
 
+
+#Room edit page layout
+roomNameLayout = [
+	[sg.InputText(key='roomName')]
+]
+
+roomDimensionsLayout = [
+	[sg.T('Width:')],
+	[sg.InputText(key='roomWidth')],
+	[sg.T('Length:')],
+	[sg.InputText(key='roomLength')],
+	[sg.T('Height:')],
+	[sg.InputText(key='roomHeight')]
+]
+
+roomEditButtonsLayout = [
+	[sg.B('Save and Exit', key='roomSaveExit')],
+	[sg.B('Discard and Exit', key='roomDiscard')]
+]
+
+roomEditLayout = [
+	[sg.Frame('Name', roomNameLayout)],
+	[sg.Frame('Dimensions', roomDimensionsLayout)],
+	[sg.Frame('', roomEditButtonsLayout)]
+]
+
+roomEdit = [
+	[sg.Frame('RoomInfo',roomEditLayout )]
+]
 
 # Create the Window
+layout = [[sg.Column(mainLayout, key='-COL1-', visible=True), sg.Column(roomEdit, visible=False, key='-COL2-')],
+	]
+
 window = sg.Window('Window Title', layout)
 
+layout = 1  # The currently visible layout
+
 while True:
-    event, values = window.read()
-    if event == sg.WIN_CLOSED: # if user closes window or clicks cancel
-        break
+	event, values = window.read()
+	if event == sg.WIN_CLOSED: # if user closes window or clicks cancel
+		break
+	if layout == 1: # checking if current window is on the main page.
+		if event == 'createNewRoom':
+			layout = changeWindow(window, layout, 2)
+	if layout == 2: # checking if current window is on the edit page.
+		if event == 'roomSaveExit':
+			sendRoomData(values)
+			layout = changeWindow(window, layout, 1)
+		if event == 'roomDiscard':
+			layout = changeWindow(window, layout, 1)
 
 window.close()
-
