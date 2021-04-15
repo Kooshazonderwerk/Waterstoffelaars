@@ -8,7 +8,7 @@ def createSensorLayout(sensor):
 	if(not isinstance(sensor, Sensor)):
 		return [[]]
 
-	sensorFrameLayout = [[sg.Text('sensor id: ' + sensor.getId()), sg.Text('value: ' + str(sensor.getValue()))]]
+	sensorFrameLayout = [[sg.Text('sensor id: ' + str(sensor.getId())), sg.Text('value: ' + str(sensor.getValue()))]]
 	sensorLayout = [sg.Frame('',sensorFrameLayout)]
 	return sensorLayout
 
@@ -37,12 +37,16 @@ def createRoomLayout(room):
 
 	roomLayout = [
 		[sg.Frame('legend', legendFrameLayout), sg.Frame('room info', roomInfoFrameLayout)],
+		[sg.B('add sensor', key='addSensor'+str(room.getId()))],
 		[sg.Column(sensorsLayout, scrollable=True, size=(220, 200), vertical_scroll_only=True), sg.Frame('3dview', graphicsViewLayout)]
 	]
 	return roomLayout
 
 def sendRoomData(values):
 	program.createRoom(values['roomName'], values['roomWidth'],values['roomHeight'],values['roomLength'])
+
+def sendSensorData(values, roomId):
+	program.createSensor(roomId, values['sensorX'], values['sensorY'],values['sensorZ'])
 
 def changeWindow(window, layout, newLayout):
 	window[f'-COL{layout}-'].update(visible=False)
@@ -100,9 +104,33 @@ def initWindow(program):
 	roomEdit = [
 		[sg.Frame('RoomInfo',roomEditLayout )]
 	]
+	#sensoredit
+	sensorLocation = [
+		[sg.T('x:')],
+		[sg.InputText(key='sensorX')],
+		[sg.T('y:')],
+		[sg.InputText(key='sensorY')],
+		[sg.T('z:')],
+		[sg.InputText(key='sensorZ')]
+	]
+
+	sensorEditButtonsLayout = [
+		[sg.B('Save and Exit', key='sensorSaveExit')],
+		[sg.B('Discard and Exit', key='sensorDiscard')]
+	]
+
+	sensorEditLayout = [
+		[sg.Frame('Location', sensorLocation)],
+		[sg.Frame('', sensorEditButtonsLayout)]
+	]
+
+	sensorEdit = [
+		[sg.Frame('RoomInfo',sensorEditLayout )]
+	]
+
 
 	# Create the Window
-	layout = [[sg.Column(mainLayout, key='-COL1-', visible=True), sg.Column(roomEdit, visible=False, key='-COL2-')],
+	layout = [[sg.Column(mainLayout, key='-COL1-', visible=True), sg.Column(roomEdit, visible=False, key='-COL2-'), sg.Column(sensorEdit, visible=False, key='-COL3-')],
 		]
 
 	return layout
@@ -116,7 +144,7 @@ layout = initWindow(program)
 window = sg.Window('Window Title', layout)
 
 layout = 1  # The currently visible layout
-
+roomId = 0
 while True:
 	event, values = window.read()
 	if event == sg.WIN_CLOSED: # if user closes window or clicks cancel
@@ -124,6 +152,9 @@ while True:
 	if layout == 1: # checking if current window is on the main page.
 		if event == 'createNewRoom':
 			layout = changeWindow(window, layout, 2)
+		if 'addSensor' in event:
+			roomId = event.replace('addSensor', '')
+			layout = changeWindow(window, layout, 3)
 	if layout == 2: # checking if current window is on the edit page.
 		if event == 'roomSaveExit':
 			sendRoomData(values)
@@ -134,6 +165,18 @@ while True:
 			window = window1
 
 		if event == 'roomDiscard':
+			layout = changeWindow(window, layout, 1)
+
+	if layout == 3:
+		if event == 'sensorSaveExit':
+			sendSensorData(values, roomId)
+			layout = 1
+			tempLayout = initWindow(program)
+			window1 = sg.Window('Window Title', tempLayout)
+			window.close()
+			window = window1
+
+		if event == 'sensorDiscard':
 			layout = changeWindow(window, layout, 1)
 
 window.close()

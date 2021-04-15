@@ -21,3 +21,6 @@ class Program:
 
 	def createRoom(self, name, width, height, length):
 		self.network.createRoom(name, width, height, length)
+
+	def createSensor(self, roomId, x, y, z):
+		self.network.createSensor(roomId, x, y, z)

@@ -20,3 +20,13 @@ class Network:
 		}
 		data = json.dumps(rawData)
 		requests.post(self.url+'/room', json=rawData)
+
+	def createSensor(self, roomId, x, y, z):
+		rawData = {
+			'x': x,
+			'y': y,
+			'z': z
+		}
+		data = json.dumps(rawData)
+		print(data)
+		requests.post(self.url+'/room/'+roomId, json=rawData)
