@@ -10,6 +10,7 @@ PAGES = (
 	EditRoomPage,
 	EditSensorPage
 )
+SERVER_URL = "http://localhost:5000"
 
 class Gui(tk.Tk):
 
@@ -22,7 +23,7 @@ class Gui(tk.Tk):
 		container.pack(side="top", fill="both", expand = True)
 		container.grid_rowconfigure(0, weight=1)
 		container.grid_columnconfigure(0, weight=1)
-
+		self.program = Program(SERVER_URL)
 		self.frames = {}
 
 		for page in PAGES:
