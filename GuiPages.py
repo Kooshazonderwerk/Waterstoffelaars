@@ -15,10 +15,16 @@ class StartPage(tk.Frame):
         self.controller = controller
         btnCreateRoom = ttk.Button(self, text="Create room", command=lambda: self.controller.show_frame(EditRoomPage))
         btnCreateRoom.grid(row=0, column=0, padx=5, pady=5)
+        btnReload = ttk.Button(self, text="reload", command=lambda: self.reload())
+        btnReload.grid(row=0, column=1, padx=5, pady=5)
 
         self.roomFrames = {}
         self.sensorFrames = {}
 
+        self.roomTabs = ttk.Notebook(self)
+        self.loadRooms()
+
+    def reload(self):
         self.roomTabs = ttk.Notebook(self)
         self.loadRooms()
 
