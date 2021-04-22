@@ -29,6 +29,7 @@ class StartPage(tk.Frame):
             self.loadRoom(room)
 
     def loadRoom(self, room):
+        self.sensorFrames[str(room.id)] = {}
         # future add room check
         self.roomFrames[str(room.id)] = ttk.Frame(self.roomTabs)
         self.roomTabs.add(self.roomFrames[str(room.id)], text=f"room {room.id}")
@@ -60,14 +61,14 @@ class StartPage(tk.Frame):
         frmSensorList = ttk.Frame(self.roomFrames[str(room.id)])
         canvasSensorList = tk.Canvas(frmSensorList)
         scrollbarSensorList = ttk.Scrollbar(frmSensorList, orient="vertical", command=canvasSensorList.yview)
-        scrollable_frame = ttk.Frame(canvasSensorList)
-        canvasSensorList.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        self.scrollable_frame = ttk.Frame(canvasSensorList)
+        canvasSensorList.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         canvasSensorList.configure(yscrollcommand=scrollbarSensorList.set)
         
         canvasSensorList.bind("<Configure>", lambda e: canvasSensorList.configure(scrollregion = canvasSensorList.bbox("all") ))
 
         for index, sensor in enumerate(room.getSensors()):
-            self.loadSensor(sensor, index, scrollable_frame)
+            self.loadSensor(sensor,room.id, index)
 
         canvasSensorList.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbarSensorList.pack(side=tk.RIGHT, fill="y")
@@ -81,13 +82,13 @@ class StartPage(tk.Frame):
         lbl3DTemp.pack(fill=tk.BOTH)
         frm3Dview.grid(row=2, column=1, padx=5, pady=5)
 
-    def loadSensor(self, sensor, position, scrollable_frame):
-        frmSensorInfo = ttk.Frame(scrollable_frame, width=50, height=10, relief=tk.GROOVE, borderwidth=5)
+    def loadSensor(self, sensor, roomid, position):
+        self.sensorFrames[str(roomid)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=50, height=10, relief=tk.GROOVE, borderwidth=5)
 
-        lblSensorName = ttk.Label(frmSensorInfo, text=f"Sensor id: {sensor.id}")
-        lblSensorValue = ttk.Label(frmSensorInfo, text="value: 0.0")
+        lblSensorName = ttk.Label(self.sensorFrames[str(roomid)][str(sensor.id)], text=f"Sensor id: {sensor.id}")
+        lblSensorValue = ttk.Label(self.sensorFrames[str(roomid)][str(sensor.id)], text="value: 0.0")
         
-        frmSensorInfo.grid(row=position, column=0, sticky="nsew")
+        self.sensorFrames[str(roomid)][str(sensor.id)].grid(row=position, column=0, sticky="nsew")
 
         lblSensorName.grid(row=0, column=0)
         lblSensorValue.grid(row=0, column=1)
