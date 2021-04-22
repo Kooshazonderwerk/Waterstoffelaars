@@ -52,7 +52,7 @@ class StartPage(tk.Frame):
 
         #Sensor add button
         frmSensorAdd = ttk.Frame(self.roomFrames[str(room.id)])
-        btnAddSensor = ttk.Button(frmSensorAdd, text="Add Sensor", command=lambda: controller.show_frame(EditSensorPage))
+        btnAddSensor = ttk.Button(frmSensorAdd, text="Add Sensor", command=lambda: self.loadSensorEditPage(str(room.id)))
         btnAddSensor.pack(side=tk.LEFT)
         frmSensorAdd.grid(row=1, column=0, padx=5, pady=5)
 
@@ -92,6 +92,10 @@ class StartPage(tk.Frame):
 
         lblSensorName.grid(row=0, column=0)
         lblSensorValue.grid(row=0, column=1)
+    
+    def loadSensorEditPage(self, value):
+        self.controller.setValue(value)
+        self.controller.show_frame(EditSensorPage)
 
 
 class EditRoomPage(tk.Frame):
@@ -141,6 +145,7 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomWidth.delete(0, tk.END)
         self.entEditRoomLength.delete(0, tk.END)
         self.entEditRoomHeight.delete(0, tk.END)
+        controller.program.createRoom(roomName, roomX, roomY, roomZ)
         controller.show_frame(StartPage)
 
     def discardAndExit(self, controller):
@@ -186,8 +191,10 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorX.delete(0, tk.END)
         self.entEditSensorY.delete(0, tk.END)
         self.entEditSensorZ.delete(0, tk.END)
-        controller.show_frame(StartPage)
 
+        controller.program.createSensor(controller.getValue(), sensorX, sensorY, sensorZ)
+        controller.show_frame(StartPage)
+        
     def discardAndExit(self, controller):
         self.entEditSensorX.delete(0, tk.END)
         self.entEditSensorY.delete(0, tk.END)

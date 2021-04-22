@@ -16,6 +16,7 @@ class Gui(tk.Tk):
 
 	def __init__(self, *args, **kwargs):
 		tk.Tk.__init__(self, *args, **kwargs)
+		self.value = ""
 
 		tk.Tk.wm_title(self, CLIENT_NAME)
 		container = tk.Frame(self)
@@ -38,6 +39,12 @@ class Gui(tk.Tk):
 	def show_frame(self, cont):
 		frame = self.frames[cont]
 		frame.tkraise()
+	def setValue(self, value):
+		self.value = value
+	
+	def getValue(self):
+		return self.value
+
 
 	
 
