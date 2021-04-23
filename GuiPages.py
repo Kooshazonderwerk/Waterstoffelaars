@@ -3,6 +3,10 @@ from tkinter import ttk
 from Room import Room
 from Sensor import Sensor
 from Program import Program
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.backends.backend_tkagg import (
+                                    FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.figure import Figure
 
 #  future plans
 # class GuiPage(tk.Frame):
@@ -82,10 +86,38 @@ class StartPage(tk.Frame):
         frmSensorList.grid(row=2, column=0, padx=5, pady=5)
 
 
-        #3d vieuw placeholder
+        #3d vieuw
         frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
-        lbl3DTemp = ttk.Label(frm3Dview, font=('Helvetica', 30), text="3d placeholder")
-        lbl3DTemp.pack(fill=tk.BOTH)
+
+
+        fig = Figure(figsize=(5, 4), dpi=100)
+
+        canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
+        canvas.draw()
+
+        ax = fig.add_subplot(111, projection='3d')
+        t1 = room.getDimensions()
+        x1, y1, z1 = t1
+
+        ax.grid(False)
+        ax.set_facecolor('xkcd:brown')
+        ax.set_xlim([0, x1])
+        ax.set_ylim([0, y1])
+        ax.set_zlim([0, z1])
+
+        list = enumerate(room.getSensors())
+        print(list)
+        for i in list:
+            t2 = sensor.getLocation()
+            x2, y2, z2 = t2
+            ax.plot(x2, y2, z2, 'ro')
+
+        toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
+        toolbar.update()
+
+
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        
         frm3Dview.grid(row=2, column=1, padx=5, pady=5)
 
     def loadSensor(self, sensor, roomid, position):
