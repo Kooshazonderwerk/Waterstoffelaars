@@ -23,9 +23,9 @@ class Sensor:
 
 		self.id = id
 		self.name = name
-		self.x = 0
-		self.y = 0
-		self.z = 0
+		self.x = x
+		self.y = y
+		self.z = z
 
 	'''returns the current value stored in the sensor object'''
 	def getValue(self):

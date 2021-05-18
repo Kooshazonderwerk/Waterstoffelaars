@@ -60,7 +60,7 @@ class StartPage(tk.Frame):
 
         #Sensor add button
         frmSensorAdd = ttk.Frame(self.roomFrames[str(room.id)])
-        btnAddSensor = ttk.Button(frmSensorAdd, text="Add Sensor", command=lambda: self.loadSensorEditPage(str(room.id)))
+        btnAddSensor = ttk.Button(frmSensorAdd, text="Add Sensor", command=lambda: self.loadSensorEditPage(str(room.id), Sensor()))
         btnAddSensor.pack(side=tk.LEFT)
         frmSensorAdd.grid(row=1, column=0, padx=5, pady=5)
 
@@ -136,9 +136,8 @@ class StartPage(tk.Frame):
         pass
     
     def loadSensorEditPage(self, value, sensor):
-        #EditSensorPage.insert(EditSensorPage, sensor)
         self.controller.setValue([value, sensor])
-        self.controller.show_frame(EditSensorPage)
+        self.controller.show_frame(EditSensorPage, sensor)
 
 
 class EditRoomPage(tk.Frame):
@@ -264,5 +263,10 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorZ.delete(0, tk.END)
         controller.show_frame(StartPage)
 
-    def post(self, data):
+    def post(self, sensor):
+        self.entEditSensorName.insert(0, sensor.name)
+        print(sensor.x)
+        self.entEditSensorX.insert(0, sensor.x)
+        self.entEditSensorY.insert(0, sensor.y)
+        self.entEditSensorZ.insert(0, sensor.z)
         pass
