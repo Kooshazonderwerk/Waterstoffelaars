@@ -1,8 +1,27 @@
+#pip install time
+import json
+import time
+#pip install socket
+import socket
+
 class Sensor:
 	
 	def __init__(self, id, name, x, y, z):
+		client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		client_socket.settimeout(1.0)
+		message = 'random'.encode()
+		# change to your server ip address
+		addr = ("127.0.0.1", 12000)
+		client_socket.sendto(message, addr)
+		try:
+			data, server = client_socket.recvfrom(1024)
+			resp_dict = json.loads(data.decode())
+			self.value = resp_dict['value']
+		except socket.timeout:
+			print('REQUEST TIMED OUT')
+			self.value = 0.0
+
 		self.id = id
-		self.value = 0.0
 		self.name = name
 		self.x = 0
 		self.y = 0
@@ -11,6 +30,7 @@ class Sensor:
 	'''returns the current value stored in the sensor object'''
 	def getValue(self):
 		return self.value
+
 
 	'''Takes a float and changes the current value of the sensor object'''
 	def setValue(self, value):

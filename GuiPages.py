@@ -121,13 +121,13 @@ class StartPage(tk.Frame):
         frm3Dview.grid(row=2, column=1, padx=5, pady=5)
 
     def loadSensor(self, sensor, roomid, position):
-        self.sensorFrames[str(roomid)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=50, height=10, relief=tk.GROOVE, borderwidth=5)
+        self.sensorFrames[str(roomid)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10, relief=tk.GROOVE, borderwidth=5)
 
         lblSensorName = ttk.Label(self.sensorFrames[str(roomid)][str(sensor.id)], text=sensor.name)
-        lblSensorValue = ttk.Label(self.sensorFrames[str(roomid)][str(sensor.id)], text="value: 0.0")
+        lblSensorValue = ttk.Label(self.sensorFrames[str(roomid)][str(sensor.id)], text=f"value: {sensor.value}")
         btnEditSensor = ttk.Button(self.sensorFrames[str(roomid)][str(sensor.id)], text="Edit", command=lambda: self.loadSensorEditPage(roomid, sensor))
-        print(str(sensor.id) + " " + sensor.name)
-        
+  
+        print("Sensor id",sensor.id,"| Sensor value:",sensor.value)
         self.sensorFrames[str(roomid)][str(sensor.id)].grid(row=position, column=0, sticky="nsew")
 
         lblSensorName.grid(row=0, column=0)
