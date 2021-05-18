@@ -19,8 +19,6 @@ class StartPage(tk.Frame):
         self.controller = controller
         btnCreateRoom = ttk.Button(self, text="Create room", command=lambda: self.controller.show_frame(EditRoomPage))
         btnCreateRoom.grid(row=0, column=0, padx=5, pady=5)
-        btnReload = ttk.Button(self, text="reload", command=lambda: self.reload())
-        btnReload.grid(row=0, column=1, padx=5, pady=5)
 
         self.roomFrames = {}
         self.sensorFrames = {}
@@ -133,7 +131,10 @@ class StartPage(tk.Frame):
     
     def loadSensorEditPage(self, value):
         self.controller.setValue(value)
-        self.controller.show_frame(EditSensorPage)
+        self.controller.show_frame(EditSensorPage, {"test":"test"})
+    
+    def post(self, data):
+        pass
 
 
 class EditRoomPage(tk.Frame):
@@ -192,6 +193,10 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomLength.delete(0, tk.END)
         self.entEditRoomHeight.delete(0, tk.END)
         controller.show_frame(StartPage)
+    
+    def post(self, data):
+        pass
+
 
 class EditSensorPage(tk.Frame):
     def __init__(self, parent, controller):
@@ -238,3 +243,6 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorY.delete(0, tk.END)
         self.entEditSensorZ.delete(0, tk.END)
         controller.show_frame(StartPage)
+
+    def post(self, data):
+        pass

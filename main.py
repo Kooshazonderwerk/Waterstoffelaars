@@ -36,9 +36,15 @@ class Gui(tk.Tk):
 
 		self.show_frame(StartPage)
 
-	def show_frame(self, cont):
+	def show_frame(self, cont, post=None):
 		frame = self.frames[cont]
 		frame.tkraise()
+		if cont == StartPage:
+			frame.reload()
+		if post is not None:
+			frame.post(post)
+		return frame
+	
 	def setValue(self, value):
 		self.value = value
 	
