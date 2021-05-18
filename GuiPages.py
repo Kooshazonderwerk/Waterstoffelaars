@@ -60,7 +60,7 @@ class StartPage(tk.Frame):
 
         #Sensor add button
         frmSensorAdd = ttk.Frame(self.roomFrames[str(room.id)])
-        btnAddSensor = ttk.Button(frmSensorAdd, text="Add Sensor", command=lambda: self.loadSensorEditPage(str(room.id), Sensor()))
+        btnAddSensor = ttk.Button(frmSensorAdd, text="Add Sensor", command=lambda: self.loadSensorEditPage(str(room.id), Sensor(None, None, 0, 0, 0)))
         btnAddSensor.pack(side=tk.LEFT)
         frmSensorAdd.grid(row=1, column=0, padx=5, pady=5)
 
@@ -253,7 +253,10 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorZ.delete(0, tk.END)
 
         print(controller.getValue()[1].id)
-        controller.program.editSensor(controller.getValue()[1].id, name, sensorX, sensorY, sensorZ)
+        if(controller.getValue()[1].id != None):
+            controller.program.editSensor(controller.getValue()[1].id, name, sensorX, sensorY, sensorZ)
+        else:
+            controller.program.addSensor(controller.getValue()[0], name, sensorX, sensorY, sensorZ)
         controller.show_frame(StartPage)
         
     def discardAndExit(self, controller):
@@ -264,9 +267,9 @@ class EditSensorPage(tk.Frame):
         controller.show_frame(StartPage)
 
     def post(self, sensor):
-        self.entEditSensorName.insert(0, sensor.name)
-        print(sensor.x)
-        self.entEditSensorX.insert(0, sensor.x)
-        self.entEditSensorY.insert(0, sensor.y)
-        self.entEditSensorZ.insert(0, sensor.z)
+        if(sensor.name != None):
+            self.entEditSensorName.insert(0, sensor.name)
+            self.entEditSensorX.insert(0, sensor.x)
+            self.entEditSensorY.insert(0, sensor.y)
+            self.entEditSensorZ.insert(0, sensor.z)
         pass
