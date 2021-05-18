@@ -1,74 +1,59 @@
-import PySimpleGUI as sg
+import tkinter as tk
 from Room import Room
 from Sensor import Sensor
 from Program import Program
+from GuiPages import *
+
+CLIENT_NAME = "waterstoffelaars"
+PAGES = (
+	StartPage,
+	EditRoomPage,
+	EditSensorPage
+)
+SERVER_URL = "http://localhost:5000"
+
+class Gui(tk.Tk):
+
+	def __init__(self, *args, **kwargs):
+		tk.Tk.__init__(self, *args, **kwargs)
+		self.value = ""
+
+		tk.Tk.wm_title(self, CLIENT_NAME)
+		container = tk.Frame(self)
+
+		container.pack(side="top", fill="both", expand = True)
+		container.grid_rowconfigure(0, weight=1)
+		container.grid_columnconfigure(0, weight=1)
+		self.program = Program(SERVER_URL)
+		self.frames = {}
+
+		for page in PAGES:
+			frame = page(container, self)
+
+			self.frames[page] = frame
+
+			frame.grid(row=0, column=0, sticky="nsew")
+
+		self.show_frame(StartPage)
+
+	def show_frame(self, cont, post=None):
+		frame = self.frames[cont]
+		frame.tkraise()
+		if cont == StartPage:
+			frame.reload()
+		if post is not None:
+			frame.post(post)
+		return frame
+	
+	def setValue(self, value):
+		self.value = value
+	
+	def getValue(self):
+		return self.value
 
 
-def createSensorLayout(sensor):
-	if(not isinstance(sensor, Sensor)):
-		return [[]]
-
-	sensorFrameLayout = [[sg.Text('sensor id: ' + sensor.getId()), sg.Text('value: ' + str(sensor.getValue()))]]
-	sensorLayout = [sg.Frame('',sensorFrameLayout)]
-	return sensorLayout
-
-'''Takes a room object and returns a layout for that room to be used in the gui'''
-def createRoomLayout(room):
-	if(not isinstance(room, Room)):
-		return [[]]
-
-	legendFrameLayout = [
-		[sg.T('legend')],
-		[]
-	]
-	roomInfoFrameLayout = [
-		[sg.T('room id: ' + room.getId())]
-	]
-
-	graphicsViewLayout = [
-		[sg.T('3d placeholder', font='Helvetica 60')]
-	]
-
-	sensors = room.getSensors()
-
-	sensorsLayout = []
-	for sensor in sensors:
-		sensorsLayout.append(createSensorLayout(sensor))
-
-	roomLayout = [
-		[sg.Frame('legend', legendFrameLayout), sg.Frame('room info', roomInfoFrameLayout)],
-		[sg.Column(sensorsLayout, scrollable=True, size=(220, 200), vertical_scroll_only=True), sg.Frame('3dview', graphicsViewLayout)]
-	]
-	return roomLayout
+	
 
 
-
-sg.theme('LightGreen1')   # Add a touch of color
-# All the stuff inside your window.
-program = Program('http://localhost:5000')
-
-program.addRoomsFromNetwork()
-
-rooms = program.getRooms()
-
-roomLayouts = [[]]
-
-for room in rooms:
-	roomLayouts[0].append(sg.Tab('room '+str(room.getId()), createRoomLayout(room)))
-
-
-layout = [  [sg.TabGroup(roomLayouts)]
-		]
-
-
-
-# Create the Window
-window = sg.Window('Window Title', layout)
-
-while True:
-    event, values = window.read()
-    if event == sg.WIN_CLOSED: # if user closes window or clicks cancel
-        break
-
-window.close()
-
+gui = Gui()
+gui.mainloop()
