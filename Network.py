@@ -21,12 +21,24 @@ class Network:
 		data = json.dumps(rawData)
 		requests.post(self.url+'/room', json=rawData)
 
-	def createSensor(self, roomId, x, y, z):
+	def addSensor(self, roomId, name, x, y, z):
 		rawData = {
+			'name': name,
 			'x': x,
 			'y': y,
 			'z': z
 		}
 		data = json.dumps(rawData)
 		print(data)
-		requests.post(self.url+'/room/'+roomId, json=rawData)
+		requests.post(self.url+'/room/'+str(roomId), json=rawData)
+
+	def editSensor(self, id, name, x, y, z):
+		rawData = {
+			'name': name,
+			'x': x,
+			'y': y,
+			'z': z
+		}
+		data = json.dumps(rawData)
+		print(data)
+		requests.put(self.url+'/sensor/'+str(id), json=rawData)

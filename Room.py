@@ -9,7 +9,7 @@ class Room:
 		self.width = width
 		self.height = height
 		for sensor in sensors:
-			self.addSensor(Sensor(sensor['id'], sensor['x'], sensor['y'], sensor['z']))
+			self.addSensor(Sensor(sensor['id'], sensor['name'], sensor['x'], sensor['y'], sensor['z']))
 
 	'''Takes a object of type Sensor and adds it to the list of sensors'''
 	def addSensor(self, sensor):

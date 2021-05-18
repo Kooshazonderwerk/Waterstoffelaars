@@ -22,5 +22,8 @@ class Program:
 	def createRoom(self, name, width, height, length):
 		self.network.createRoom(name, width, height, length)
 
-	def createSensor(self, roomId, x, y, z):
-		self.network.createSensor(roomId, x, y, z)
+	def editSensor(self, id, name, x, y, z):
+		self.network.editSensor(id, name, x, y, z)
+
+	def addSensor(self, roomId, name, x, y, z):
+		self.network.addSensor(roomId, name, x, y, z)

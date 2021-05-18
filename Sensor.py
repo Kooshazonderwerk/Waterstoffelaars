@@ -6,7 +6,7 @@ import socket
 
 class Sensor:
 	
-	def __init__(self, id, x, y, z):
+	def __init__(self, id, name, x, y, z):
 		client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		client_socket.settimeout(1.0)
 		message = 'random'.encode()
@@ -22,6 +22,7 @@ class Sensor:
 			self.value = 0.0
 
 		self.id = id
+		self.name = name
 		self.x = 0
 		self.y = 0
 		self.z = 0
@@ -48,3 +49,7 @@ class Sensor:
 	'''returns a string with the id stored in the Sensor object'''
 	def getId(self):
 		return self.id
+
+	'''returns a string with the name stored in the Sensor object'''
+	def getName(self):
+		return self.name
