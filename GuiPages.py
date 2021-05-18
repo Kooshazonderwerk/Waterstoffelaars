@@ -78,7 +78,7 @@ class StartPage(tk.Frame):
         canvasSensorList.bind("<Configure>", lambda e: canvasSensorList.configure(scrollregion = canvasSensorList.bbox("all") ))
 
         for index, sensor in enumerate(room.getSensors()):
-            self.loadSensor(sensor,room.id, index)
+            self.loadSensor(sensor, room.id, index)
 
         canvasSensorList.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbarSensorList.pack(side=tk.RIGHT, fill="y")
@@ -123,16 +123,20 @@ class StartPage(tk.Frame):
     def loadSensor(self, sensor, roomid, position):
         self.sensorFrames[str(roomid)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=50, height=10, relief=tk.GROOVE, borderwidth=5)
 
-        lblSensorName = ttk.Label(self.sensorFrames[str(roomid)][str(sensor.id)], text=f"Sensor id: {sensor.id}")
+        lblSensorName = ttk.Label(self.sensorFrames[str(roomid)][str(sensor.id)], text=sensor.name)
         lblSensorValue = ttk.Label(self.sensorFrames[str(roomid)][str(sensor.id)], text="value: 0.0")
+        btnEditSensor = ttk.Button(self.sensorFrames[str(roomid)][str(sensor.id)], text="Edit", command=lambda: self.loadSensorEditPage(roomid, sensor))
+        print(str(sensor.id) + " " + sensor.name)
         
         self.sensorFrames[str(roomid)][str(sensor.id)].grid(row=position, column=0, sticky="nsew")
 
         lblSensorName.grid(row=0, column=0)
         lblSensorValue.grid(row=0, column=1)
+        btnEditSensor.grid(row=0, column=2)
     
-    def loadSensorEditPage(self, value):
-        self.controller.setValue(value)
+    def loadSensorEditPage(self, value, sensor):
+        #EditSensorPage.insert(EditSensorPage, sensor)
+        self.controller.setValue([value, sensor])
         self.controller.show_frame(EditSensorPage)
 
 
@@ -199,18 +203,27 @@ class EditSensorPage(tk.Frame):
 
         #dimensions
         frmEditLocation = ttk.Frame(self)
+
+        lblEditSensorName = ttk.Label(frmEditLocation, text="Name: ")
+        self.entEditSensorName = ttk.Entry(frmEditLocation)
+        lblEditSensorName.grid(row=0, column=0, padx=5, pady=5,)
+        self.entEditSensorName.grid(row=0, column=1, padx=5, pady=5)
+
         lblEditSensorX = ttk.Label(frmEditLocation, text="X: ")
         self.entEditSensorX = ttk.Entry(frmEditLocation)
-        lblEditSensorX.grid(row=0, column=0, padx=5, pady=5,)
-        self.entEditSensorX.grid(row=0, column=1, padx=5, pady=5)
+        lblEditSensorX.grid(row=1, column=0, padx=5, pady=5,)
+        self.entEditSensorX.grid(row=1, column=1, padx=5, pady=5)
+
         lblEditSensorY = ttk.Label(frmEditLocation, text="Y: ")
         self.entEditSensorY = ttk.Entry(frmEditLocation)
-        lblEditSensorY.grid(row=1, column=0, padx=5, pady=5)
-        self.entEditSensorY.grid(row=1, column=1, padx=5, pady=5)
+        lblEditSensorY.grid(row=2, column=0, padx=5, pady=5)
+        self.entEditSensorY.grid(row=2, column=1, padx=5, pady=5)
+
         lblEditSensorZ = ttk.Label(frmEditLocation, text="Z: ")
         self.entEditSensorZ = ttk.Entry(frmEditLocation)
-        lblEditSensorZ.grid(row=2, column=0, padx=5, pady=5)
-        self.entEditSensorZ.grid(row=2, column=1, padx=5, pady=5)
+        lblEditSensorZ.grid(row=3, column=0, padx=5, pady=5)
+        self.entEditSensorZ.grid(row=3, column=1, padx=5, pady=5)
+
         frmEditLocation.grid(row=1, column=0, padx=5, pady=5, sticky="w")
         #save and discard buttons
         frmEditSensorSaveOrDiscard = ttk.Frame(self)
@@ -220,20 +233,27 @@ class EditSensorPage(tk.Frame):
         btnEditSensorDiscard.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
         frmEditSensorSaveOrDiscard.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+
+    def insert(self, sensor):
+        self.entEditSensorName.insert(0, sensor.name)
     
     def saveAndExit(self, controller):
+        name = self.entEditSensorName.get()
         sensorX = self.entEditSensorX.get()
         sensorY = self.entEditSensorY.get()
         sensorZ = self.entEditSensorZ.get()
 
+        self.entEditSensorName.delete(0, tk.END)
         self.entEditSensorX.delete(0, tk.END)
         self.entEditSensorY.delete(0, tk.END)
         self.entEditSensorZ.delete(0, tk.END)
 
-        controller.program.createSensor(controller.getValue(), sensorX, sensorY, sensorZ)
+        print(controller.getValue()[1].id)
+        controller.program.editSensor(controller.getValue()[1].id, name, sensorX, sensorY, sensorZ)
         controller.show_frame(StartPage)
         
     def discardAndExit(self, controller):
+        self.entEditSensorName.delete(0, tk.END)
         self.entEditSensorX.delete(0, tk.END)
         self.entEditSensorY.delete(0, tk.END)
         self.entEditSensorZ.delete(0, tk.END)
