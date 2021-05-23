@@ -103,10 +103,11 @@ class StartPage(tk.Frame):
         ax.set_ylim([0, y1])
         ax.set_zlim([0, z1])
 
-        list = enumerate(room.getSensors())
-        print(list)
+        list = room.getSensors()
+
+
         for i in list:
-            t2 = sensor.getLocation()
+            t2 = sensor.getLocation(i)
             x2, y2, z2 = t2
             ax.plot(x2, y2, z2, 'ro')
 
