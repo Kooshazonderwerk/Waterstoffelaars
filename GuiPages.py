@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import Widget, ttk
 from typing import final
 from Room import Room
 from Sensor import Sensor
@@ -194,6 +194,22 @@ class EditRoomPage(tk.Frame):
 
         frmEditSaveOrDiscard.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
+        #3D view
+
+        self.load3dview()
+        self.entEditRoomWidth.bind('<KeyRelease>', self.updateAxisEvent)
+        self.entEditRoomLength.bind('<KeyRelease>', self.updateAxisEvent)
+        self.entEditRoomHeight.bind('<KeyRelease>', self.updateAxisEvent)
+    
+    def getInput(self):
+        roomInput = {
+            'roomName': self.entEditRoomName.get(),
+            'width': self.entEditRoomWidth.get(),
+            'length': self.entEditRoomLength.get(),
+            'height': self.entEditRoomHeight.get()
+        }
+        return roomInput
+
     def saveAndExit(self, controller):
         roomName = self.entEditRoomName.get()
         roomX = self.entEditRoomWidth.get()
@@ -229,6 +245,43 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomWidth.insert(0, data['width'])
         self.entEditRoomLength.insert(0, data['length'])
         self.entEditRoomHeight.insert(0, data['height'])
+        self.updateAxis(data['width'], data['length'], data['height'])
+
+
+    def load3dview(self):
+
+
+        #3D view
+        frm3Dview = ttk.Frame(self)
+
+        fig = Figure(figsize=(5, 4), dpi=100)
+
+        canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
+        canvas.draw()
+
+        self.ax = fig.add_subplot(111, projection='3d')
+
+        self.ax.grid(True)
+        self.ax.set_facecolor('xkcd:grey')
+        self.updateAxis(1,1,1)
+
+        frm3Dview.grid(row=1, column=1, padx=5, pady=5)
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+
+    def updateAxis(self, width, length, height):
+        self.ax.set_xlim([0, width])
+        self.ax.set_ylim([0, length])
+        self.ax.set_zlim([0, height])
+
+
+    #this exists because the event handeler requires that the event parameter exists
+    def updateAxisEvent(self, event):
+        roomInput = self.getInput()
+        if(roomInput['width'].isnumeric() and roomInput['length'].isnumeric() and roomInput['height'].isnumeric()):
+            self.updateAxis(float(roomInput['width']), float(roomInput['length']), float(roomInput['height']))
+        else:
+            self.updateAxis(1,1,1)
 
 
 class EditSensorPage(tk.Frame):
