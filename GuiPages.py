@@ -104,12 +104,14 @@ class StartPage(tk.Frame):
         frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
 
 
-        fig = Figure(figsize=(5, 4), dpi=100)
+        fig = Figure(facecolor = 'xkcd:brown', dpi=100)
+
 
         canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
         canvas.draw()
 
         ax = fig.add_subplot(111, projection='3d')
+        fig.tight_layout()
         t1 = room.getDimensions()
         x1, y1, z1 = t1
 
@@ -118,6 +120,7 @@ class StartPage(tk.Frame):
         ax.set_xlim([0, x1])
         ax.set_ylim([0, y1])
         ax.set_zlim([0, z1])
+        ax.set_box_aspect(aspect = (x1, y1, z1))
 
         list = room.getSensors()
 
