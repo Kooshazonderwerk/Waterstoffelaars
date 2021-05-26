@@ -21,6 +21,18 @@ class Network:
 		data = json.dumps(rawData)
 		requests.post(self.url+'/room', json=rawData)
 
+	def editRoom(self, id, name, width, height, length):
+		rawData = {
+			'name': name,
+			'width': width,
+			'length': length,
+			'height': height,
+		}
+		data = json.dumps(rawData)
+		requests.put(self.url+'/room/'+str(id), json=rawData)
+
+
+
 	def addSensor(self, roomId, name, x, y, z):
 		rawData = {
 			'name': name,

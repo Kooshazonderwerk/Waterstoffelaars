@@ -2,9 +2,10 @@ from Sensor import Sensor
 
 class Room:
 
-	def __init__(self, id, lenght=0, width=0, height=0, sensors=[]):
+	def __init__(self, id, name, lenght=0, width=0, height=0, sensors=[]):
 		self.sensorList = []
 		self.id = id
+		self.name = name
 		self.lenght = lenght
 		self.width = width
 		self.height = height

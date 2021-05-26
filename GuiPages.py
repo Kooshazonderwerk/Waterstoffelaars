@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from typing import final
 from Room import Room
 from Sensor import Sensor
 from Program import Program
@@ -53,6 +54,21 @@ class StartPage(tk.Frame):
         #Room info frame
         frmRoomInfo = ttk.Frame(self.roomFrames[str(room.id)])
         lblRoomInfoName = ttk.Label(frmRoomInfo, text=f"room {str(room.id)}")
+
+        l, w, h = room.getDimensions()
+
+        roomInfo = {
+            "id": room.id,
+            "name": room.name,
+            "width":w,
+            "height":h,
+            "length":l,
+        }
+
+        btnEditRoom = ttk.Button(frmRoomInfo, text="Edit room", command=lambda: self.controller.show_frame(EditRoomPage, roomInfo))
+
+        btnEditRoom.grid(row=1, column=0, padx=5, pady=5)
+
 
         lblRoomInfoName.grid(row=0, column=0, padx=5, pady=5)
 
@@ -143,6 +159,8 @@ class StartPage(tk.Frame):
 class EditRoomPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.id = 0
+        self.create = True
 
         #Name
         frmEditRoomName = ttk.Frame(self)
@@ -187,7 +205,14 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomWidth.delete(0, tk.END)
         self.entEditRoomLength.delete(0, tk.END)
         self.entEditRoomHeight.delete(0, tk.END)
-        controller.program.createRoom(roomName, roomX, roomY, roomZ)
+
+        if(self.create):
+            controller.program.createRoom(roomName, roomX, roomY, roomZ)
+        else:
+            controller.program.editRoom(self.id, roomName, roomX, roomY, roomZ)
+        self.create = True
+
+        
         controller.show_frame(StartPage)
 
     def discardAndExit(self, controller):
@@ -198,7 +223,12 @@ class EditRoomPage(tk.Frame):
         controller.show_frame(StartPage)
     
     def post(self, data):
-        pass
+        self.id = data['id']
+        self.create = False
+        self.entEditRoomName.insert(0, data['name'])
+        self.entEditRoomWidth.insert(0, data['width'])
+        self.entEditRoomLength.insert(0, data['length'])
+        self.entEditRoomHeight.insert(0, data['height'])
 
 
 class EditSensorPage(tk.Frame):
