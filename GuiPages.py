@@ -6,8 +6,9 @@ from Sensor import Sensor
 from Program import Program
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (
-                                    FigureCanvasTkAgg, NavigationToolbar2Tk)
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
+
 
 #  future plans
 # class GuiPage(tk.Frame):
@@ -31,7 +32,7 @@ class StartPage(tk.Frame):
         self.roomTabs = ttk.Notebook(self)
         self.loadRooms()
 
-    def loadRooms(self): 
+    def loadRooms(self):
         self.controller.program.addRoomsFromNetwork()
         rooms = self.controller.program.getRooms()
         for room in rooms:
@@ -44,14 +45,14 @@ class StartPage(tk.Frame):
         self.roomTabs.add(self.roomFrames[str(room.id)], text=f"room {room.id}")
         self.roomTabs.grid(row=1, column=0, sticky="nsew")
 
-        #legend Frame
+        # legend Frame
         frmLegend = ttk.Frame(self.roomFrames[str(room.id)])
         lblLegend = ttk.Label(frmLegend, text="Legend")
 
         lblLegend.grid(row=0, column=0, padx=5, pady=5)
 
         frmLegend.grid(row=0, column=0, padx=5, pady=5)
-        #Room info frame
+        # Room info frame
         frmRoomInfo = ttk.Frame(self.roomFrames[str(room.id)])
         lblRoomInfoName = ttk.Label(frmRoomInfo, text=f"room {str(room.id)}")
 
@@ -60,36 +61,37 @@ class StartPage(tk.Frame):
         roomInfo = {
             "id": room.id,
             "name": room.name,
-            "width":w,
-            "height":h,
-            "length":l,
+            "width": w,
+            "height": h,
+            "length": l,
         }
 
-        btnEditRoom = ttk.Button(frmRoomInfo, text="Edit room", command=lambda: self.controller.show_frame(EditRoomPage, roomInfo))
+        btnEditRoom = ttk.Button(frmRoomInfo, text="Edit room",
+                                 command=lambda: self.controller.show_frame(EditRoomPage, roomInfo))
 
         btnEditRoom.grid(row=1, column=0, padx=5, pady=5)
-
 
         lblRoomInfoName.grid(row=0, column=0, padx=5, pady=5)
 
         frmRoomInfo.grid(row=0, column=1, padx=5, pady=5)
 
-        #Sensor add button
+        # Sensor add button
         frmSensorAdd = ttk.Frame(self.roomFrames[str(room.id)])
-        btnAddSensor = ttk.Button(frmSensorAdd, text="Add Sensor", command=lambda: self.loadSensorEditPage(room, Sensor(None, None, 0, 0, 0)))
+        btnAddSensor = ttk.Button(frmSensorAdd, text="Add Sensor",
+                                  command=lambda: self.loadSensorEditPage(room, Sensor(None, None, 0, 0, 0)))
         btnAddSensor.pack(side=tk.LEFT)
         frmSensorAdd.grid(row=1, column=0, padx=5, pady=5)
 
-
-        #sensor list
+        # sensor list
         frmSensorList = ttk.Frame(self.roomFrames[str(room.id)])
         canvasSensorList = tk.Canvas(frmSensorList)
         scrollbarSensorList = ttk.Scrollbar(frmSensorList, orient="vertical", command=canvasSensorList.yview)
         self.scrollable_frame = ttk.Frame(canvasSensorList)
         canvasSensorList.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         canvasSensorList.configure(yscrollcommand=scrollbarSensorList.set)
-        
-        canvasSensorList.bind("<Configure>", lambda e: canvasSensorList.configure(scrollregion = canvasSensorList.bbox("all") ))
+
+        canvasSensorList.bind("<Configure>",
+                              lambda e: canvasSensorList.configure(scrollregion=canvasSensorList.bbox("all")))
 
         for index, sensor in enumerate(room.getSensors()):
             self.loadSensor(sensor, room, index)
@@ -99,13 +101,10 @@ class StartPage(tk.Frame):
 
         frmSensorList.grid(row=2, column=0, padx=5, pady=5)
 
-
-        #3d vieuw
+        # 3d vieuw
         frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
 
-
-        fig = Figure(facecolor = 'xkcd:brown', dpi=100)
-
+        fig = Figure(facecolor='xkcd:brown', dpi=100)
 
         canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
         canvas.draw()
@@ -120,14 +119,22 @@ class StartPage(tk.Frame):
         ax.set_xlim([0, x1])
         ax.set_ylim([0, y1])
         ax.set_zlim([0, z1])
-        ax.set_box_aspect(aspect = (x1, y1, z1))
+        ax.set_box_aspect(aspect=(x1, y1, z1))
 
         list = room.getSensors()
 
         for i in list:
             t2 = i.getLocation()
             x2, y2, z2 = t2
-            ax.plot(x2, y2, z2, 'ro')
+            ms = 20  # markersize
+            ax.plot(x2, y2, z2, 'or')
+            ax.plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
+            for x in range(5):
+                ax.plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+                ax.plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
+                ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
+                ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+                ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
 
         toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
         toolbar.update()
@@ -137,13 +144,15 @@ class StartPage(tk.Frame):
         frm3Dview.grid(row=2, column=1, padx=5, pady=5)
 
     def loadSensor(self, sensor, room, position):
-        self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10, relief=tk.GROOVE, borderwidth=5)
+        self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10,
+                                                                    relief=tk.GROOVE, borderwidth=5)
 
         lblSensorName = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], text=sensor.name)
         lblSensorValue = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], text=f"value: {sensor.value}")
-        btnEditSensor = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit", command=lambda: self.loadSensorEditPage(room, sensor))
+        btnEditSensor = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit",
+                                   command=lambda: self.loadSensorEditPage(room, sensor))
 
-        print("Sensor id",sensor.id,"| Sensor value:",sensor.value)
+        print("Sensor id", sensor.id, "| Sensor value:", sensor.value)
         self.sensorFrames[str(room.id)][str(sensor.id)].grid(row=position, column=0, sticky="nsew")
 
         lblSensorName.grid(row=0, column=0)
@@ -168,7 +177,7 @@ class EditRoomPage(tk.Frame):
         self.id = 0
         self.create = True
 
-        #Name
+        # Name
         frmEditRoomName = ttk.Frame(self)
         lblEditRoomName = ttk.Label(frmEditRoomName, text="Name: ")
         self.entEditRoomName = ttk.Entry(frmEditRoomName)
@@ -176,11 +185,11 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomName.grid(row=0, column=1, padx=5, pady=5)
         frmEditRoomName.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
-        #dimensions
+        # dimensions
         frmEditDimensions = ttk.Frame(self)
         lblEditRoomWidth = ttk.Label(frmEditDimensions, text="Width: ")
         self.entEditRoomWidth = ttk.Entry(frmEditDimensions)
-        lblEditRoomWidth.grid(row=0, column=0, padx=5, pady=5,)
+        lblEditRoomWidth.grid(row=0, column=0, padx=5, pady=5, )
         self.entEditRoomWidth.grid(row=0, column=1, padx=5, pady=5)
         lblEditRoomLength = ttk.Label(frmEditDimensions, text="Length: ")
         self.entEditRoomLength = ttk.Entry(frmEditDimensions)
@@ -192,22 +201,24 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomHeight.grid(row=2, column=1, padx=5, pady=5)
         frmEditDimensions.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
-        #save and discard buttons
+        # save and discard buttons
         frmEditSaveOrDiscard = ttk.Frame(self)
-        btnEditRoomSave = ttk.Button(frmEditSaveOrDiscard, text="Save and Exit", command=lambda: EditRoomPage.saveAndExit(self, controller))
+        btnEditRoomSave = ttk.Button(frmEditSaveOrDiscard, text="Save and Exit",
+                                     command=lambda: EditRoomPage.saveAndExit(self, controller))
         btnEditRoomSave.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        btnEditRoomDiscard = ttk.Button(frmEditSaveOrDiscard, text="Discard and Exit", command=lambda: EditRoomPage.discardAndExit(self, controller))
+        btnEditRoomDiscard = ttk.Button(frmEditSaveOrDiscard, text="Discard and Exit",
+                                        command=lambda: EditRoomPage.discardAndExit(self, controller))
         btnEditRoomDiscard.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
         frmEditSaveOrDiscard.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
-        #3D view
+        # 3D view
 
         self.load3dview()
         self.entEditRoomWidth.bind('<KeyRelease>', self.updateAxisEvent)
         self.entEditRoomLength.bind('<KeyRelease>', self.updateAxisEvent)
         self.entEditRoomHeight.bind('<KeyRelease>', self.updateAxisEvent)
-    
+
     def getInput(self):
         roomInput = {
             'roomName': self.entEditRoomName.get(),
@@ -223,19 +234,18 @@ class EditRoomPage(tk.Frame):
         roomZ = self.entEditRoomLength.get()
         roomY = self.entEditRoomHeight.get()
         print(roomName)
-        #debugging^
+        # debugging^
         self.entEditRoomName.delete(0, tk.END)
         self.entEditRoomWidth.delete(0, tk.END)
         self.entEditRoomLength.delete(0, tk.END)
         self.entEditRoomHeight.delete(0, tk.END)
 
-        if(self.create):
+        if (self.create):
             controller.program.createRoom(roomName, roomX, roomY, roomZ)
         else:
             controller.program.editRoom(self.id, roomName, roomX, roomY, roomZ)
         self.create = True
 
-        
         controller.show_frame(StartPage)
 
     def discardAndExit(self, controller):
@@ -254,14 +264,12 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomHeight.insert(0, data['height'])
         self.updateAxis(data['width'], data['length'], data['height'])
 
-
     def load3dview(self):
 
-
-        #3D view
+        # 3D view
         frm3Dview = ttk.Frame(self)
 
-        fig = Figure(facecolor = 'xkcd:grey', dpi=100)
+        fig = Figure(facecolor='xkcd:grey', dpi=100)
         fig.tight_layout()
 
         canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
@@ -271,26 +279,24 @@ class EditRoomPage(tk.Frame):
 
         self.ax.grid(True)
         self.ax.set_facecolor('xkcd:grey')
-        self.updateAxis(1,1,1)
+        self.updateAxis(1, 1, 1)
 
         frm3Dview.grid(row=1, column=1, padx=5, pady=5)
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-
 
     def updateAxis(self, width, length, height):
         self.ax.set_xlim([0, width])
         self.ax.set_ylim([0, length])
         self.ax.set_zlim([0, height])
-        self.ax.set_box_aspect(aspect = (width, length, height))
+        self.ax.set_box_aspect(aspect=(width, length, height))
 
-
-    #this exists because the event handeler requires that the event parameter exists
+    # this exists because the event handeler requires that the event parameter exists
     def updateAxisEvent(self, event):
         roomInput = self.getInput()
-        if(roomInput['width'].isnumeric() and roomInput['length'].isnumeric() and roomInput['height'].isnumeric()):
+        if (roomInput['width'].isnumeric() and roomInput['length'].isnumeric() and roomInput['height'].isnumeric()):
             self.updateAxis(float(roomInput['width']), float(roomInput['length']), float(roomInput['height']))
         else:
-            self.updateAxis(1,1,1)
+            self.updateAxis(1, 1, 1)
 
 
 class EditSensorPage(tk.Frame):
@@ -299,17 +305,17 @@ class EditSensorPage(tk.Frame):
 
         self.room = None
 
-        #dimensions
+        # dimensions
         frmEditLocation = ttk.Frame(self)
 
         lblEditSensorName = ttk.Label(frmEditLocation, text="Name: ")
         self.entEditSensorName = ttk.Entry(frmEditLocation)
-        lblEditSensorName.grid(row=0, column=0, padx=5, pady=5,)
+        lblEditSensorName.grid(row=0, column=0, padx=5, pady=5, )
         self.entEditSensorName.grid(row=0, column=1, padx=5, pady=5)
 
         lblEditSensorX = ttk.Label(frmEditLocation, text="X: ")
         self.entEditSensorX = ttk.Entry(frmEditLocation)
-        lblEditSensorX.grid(row=1, column=0, padx=5, pady=5,)
+        lblEditSensorX.grid(row=1, column=0, padx=5, pady=5, )
         self.entEditSensorX.grid(row=1, column=1, padx=5, pady=5)
 
         lblEditSensorY = ttk.Label(frmEditLocation, text="Y: ")
@@ -324,21 +330,22 @@ class EditSensorPage(tk.Frame):
 
         frmEditLocation.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
-        #save and discard buttons
+        # save and discard buttons
         frmEditSensorSaveOrDiscard = ttk.Frame(self)
-        btnEditSensorSave = ttk.Button(frmEditSensorSaveOrDiscard, text="Save and Exit", command=lambda: EditSensorPage.saveAndExit(self, controller))
+        btnEditSensorSave = ttk.Button(frmEditSensorSaveOrDiscard, text="Save and Exit",
+                                       command=lambda: EditSensorPage.saveAndExit(self, controller))
         btnEditSensorSave.grid(row=1, column=0, padx=5, pady=5, sticky="w")
-        btnEditSensorDiscard = ttk.Button(frmEditSensorSaveOrDiscard, text="Discard and Exit", command=lambda: EditSensorPage.discardAndExit(self, controller))
+        btnEditSensorDiscard = ttk.Button(frmEditSensorSaveOrDiscard, text="Discard and Exit",
+                                          command=lambda: EditSensorPage.discardAndExit(self, controller))
         btnEditSensorDiscard.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
         frmEditSensorSaveOrDiscard.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
         self.load3dview()
-    
+
         self.entEditSensorX.bind('<KeyRelease>', self.plotSensorEvent)
         self.entEditSensorY.bind('<KeyRelease>', self.plotSensorEvent)
         self.entEditSensorZ.bind('<KeyRelease>', self.plotSensorEvent)
-
 
     def load3dview(self):
 
@@ -346,16 +353,15 @@ class EditSensorPage(tk.Frame):
         SensorY = 0
         SensorZ = 0
 
-        #3D view
+        # 3D view
         frm3Dview = ttk.Frame(self)
 
-        fig = Figure(facecolor = 'xkcd:grey', dpi=100)
+        fig = Figure(facecolor='xkcd:grey', dpi=100)
 
         canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
         canvas.draw()
 
         self.ax = fig.add_subplot(111, projection='3d')
-
 
         self.ax.grid(True)
         self.ax.set_facecolor('xkcd:grey')
@@ -367,26 +373,26 @@ class EditSensorPage(tk.Frame):
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
     def setRoomAxis(self):
-        if(self.room == None):
-            x1, y1, z1 = (500,500,500)
+        if (self.room == None):
+            x1, y1, z1 = (500, 500, 500)
         else:
             x1, y1, z1 = self.room.getDimensions()
         self.ax.set_xlim([0, x1])
         self.ax.set_ylim([0, y1])
         self.ax.set_zlim([0, z1])
-        self.ax.set_box_aspect(aspect = (x1, y1, z1))
+        self.ax.set_box_aspect(aspect=(x1, y1, z1))
 
     def plotSensor(self, x, y, z):
         self.ax.clear()
         self.setRoomAxis()
         plot = self.ax.plot(x, y, z, 'ro')
-    
+
     def plotSensorEvent(self, event):
         sensorInput = self.getInput()
-        if(sensorInput['x'].isnumeric() and sensorInput['y'].isnumeric() and sensorInput['z'].isnumeric()):
+        if (sensorInput['x'].isnumeric() and sensorInput['y'].isnumeric() and sensorInput['z'].isnumeric()):
             self.plotSensor(float(sensorInput['x']), float(sensorInput['y']), float(sensorInput['z']))
         else:
-            self.plotSensor(1,1,1)
+            self.plotSensor(1, 1, 1)
 
     def getInput(self):
         sensorInfo = {
@@ -397,10 +403,9 @@ class EditSensorPage(tk.Frame):
         }
         return sensorInfo
 
-
     def insert(self, sensor):
         self.entEditSensorName.insert(0, sensor.name)
-    
+
     def saveAndExit(self, controller):
         name = self.entEditSensorName.get()
         sensorX = self.entEditSensorX.get()
@@ -413,12 +418,12 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorZ.delete(0, tk.END)
 
         print(controller.getValue()[1].id)
-        if(controller.getValue()[1].id != None):
+        if (controller.getValue()[1].id != None):
             controller.program.editSensor(controller.getValue()[1].id, name, sensorX, sensorY, sensorZ)
         else:
             controller.program.addSensor(controller.getValue()[0], name, sensorX, sensorY, sensorZ)
         controller.show_frame(StartPage)
-        
+
     def discardAndExit(self, controller):
         self.entEditSensorName.delete(0, tk.END)
         self.entEditSensorX.delete(0, tk.END)
@@ -429,7 +434,7 @@ class EditSensorPage(tk.Frame):
     def post(self, info):
         self.room = info['room']
         self.plotSensor(info['sensor'].x, info['sensor'].y, info['sensor'].z)
-        if(info['sensor'].name != None):
+        if (info['sensor'].name != None):
             self.entEditSensorName.insert(0, info['sensor'].name)
             self.entEditSensorX.insert(0, info['sensor'].x)
             self.entEditSensorY.insert(0, info['sensor'].y)
