@@ -35,10 +35,26 @@ class Network:
 
 	def addSensor(self, roomId, name, x, y, z):
 		rawData = {
+			'type': "sensor",
 			'name': name,
 			'x': x,
 			'y': y,
 			'z': z
+		}
+		data = json.dumps(rawData)
+		print(data)
+		requests.post(self.url+'/room/'+str(roomId), json=rawData)
+	
+	def addObstacle(self, roomId, name, x1, y1, z1, x2, y2, z2):
+		rawData = {
+			'type': "obstacle",
+			'name': name,
+			'x1': x1,
+			'y1': y1,
+			'z1': z1,
+			'x2': x2,
+			'y2': y2,
+			'z2': z2
 		}
 		data = json.dumps(rawData)
 		print(data)
@@ -54,3 +70,17 @@ class Network:
 		data = json.dumps(rawData)
 		print(data)
 		requests.put(self.url+'/sensor/'+str(id), json=rawData)
+
+	def editObstacle(self, id, name, x1, y1, z1, x2, y2, z2):
+		rawData = {
+			'name': name,
+			'x1': x1,
+			'y1': y1,
+			'z1': z1,
+			'x2': x2,
+			'y2': y2,
+			'z2': z2
+		}
+		data = json.dumps(rawData)
+		print(data)
+		requests.put(self.url+'/obstacle/'+str(id), json=rawData)

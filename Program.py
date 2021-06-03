@@ -11,7 +11,7 @@ class Program:
 		return self.rooms
 
 	def addRoom(self, room):
-		self.rooms.append(Room(room['id'], room['name'], room['length'], room['width'], room['height'], room['sensors']))
+		self.rooms.append(Room(room['id'], room['name'], room['length'], room['width'], room['height'], room['sensors'], room['obstacles']))
 
 	def addRoomsFromNetwork(self):
 		rooms = self.network.getRooms()
@@ -30,3 +30,9 @@ class Program:
 
 	def addSensor(self, roomId, name, x, y, z):
 		self.network.addSensor(roomId, name, x, y, z)
+
+	def editObstacle(self, id, name, x1, y1, z1, x2, y2, z2):
+		self.network.editObstacle(id, name, x1, y1, z1, x2, y2, z2)
+
+	def addObstacle(self, roomId, name, x1, y1, z1, x2, y2, z2):
+		self.network.addObstacle(roomId, name, x1, y1, z1, x2, y2, z2)

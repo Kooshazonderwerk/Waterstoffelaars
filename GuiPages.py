@@ -1,8 +1,10 @@
 import tkinter as tk
+import numpy as np
 from tkinter import Widget, ttk
 from typing import final
 from Room import Room
 from Sensor import Sensor
+from Obstacle import Obstacle
 from Program import Program
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (
@@ -24,6 +26,7 @@ class StartPage(tk.Frame):
 
         self.roomFrames = {}
         self.sensorFrames = {}
+        self.obstacleFrames = {}
 
         self.roomTabs = ttk.Notebook(self)
         self.loadRooms()
@@ -40,6 +43,7 @@ class StartPage(tk.Frame):
 
     def loadRoom(self, room):
         self.sensorFrames[str(room.id)] = {}
+        self.obstacleFrames[str(room.id)] = {}
         # future add room check
         self.roomFrames[str(room.id)] = ttk.Frame(self.roomTabs)
         self.roomTabs.add(self.roomFrames[str(room.id)], text=f"room {room.id}")
@@ -78,9 +82,35 @@ class StartPage(tk.Frame):
         # Sensor add button
         frmSensorAdd = ttk.Frame(self.roomFrames[str(room.id)])
         btnAddSensor = ttk.Button(frmSensorAdd, text="Add Sensor",
-                                  command=lambda: self.loadSensorEditPage(room, Sensor(None, None, 0, 0, 0)))
+                                    command=lambda: self.loadSensorEditPage(room, Sensor(None, None, 0, 0, 0)))
         btnAddSensor.pack(side=tk.LEFT)
         frmSensorAdd.grid(row=1, column=0, padx=5, pady=5)
+
+        #Obstacle add button
+        frmObstacleAdd = ttk.Frame(self.roomFrames[str(room.id)])
+        btnAddObstacle = ttk.Button(frmObstacleAdd, text="Add Obstacle", 
+                                    command=lambda: self.loadObstacleEditPage(room, Obstacle(None, None, 0, 0, 0, 0, 0, 0)))
+        btnAddObstacle.pack(side=tk.LEFT)
+        frmObstacleAdd.grid(row=2, column=0, padx=5, pady=5)
+
+        #Obstacle list
+        frmObstacleList = ttk.Frame(self.roomFrames[str(room.id)])
+        canvasObstacleList = tk.Canvas(frmObstacleList)
+        scrollbarObstacleList = ttk.Scrollbar(frmObstacleList, orient="vertical", command=canvasObstacleList.yview)
+        self.scrollable_frame = ttk.Frame(canvasObstacleList)
+        canvasObstacleList.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        canvasObstacleList.configure(yscrollcommand=scrollbarObstacleList.set)
+        
+        canvasObstacleList.bind("<Configure>", 
+                              lambda e: canvasObstacleList.configure(scrollregion = canvasObstacleList.bbox("all") ))
+
+        for index, obstacle in enumerate(room.getObstacles()):
+            self.loadObstacle(obstacle, room, index)
+
+        canvasObstacleList.pack(side=tk.LEFT, fill="both", expand=True)
+        scrollbarObstacleList.pack(side=tk.RIGHT, fill="y")
+
+        frmObstacleList.grid(row=3, column=1, padx=5, pady=5)
 
         # sensor list
         frmSensorList = ttk.Frame(self.roomFrames[str(room.id)])
@@ -99,10 +129,33 @@ class StartPage(tk.Frame):
         canvasSensorList.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbarSensorList.pack(side=tk.RIGHT, fill="y")
 
-        frmSensorList.grid(row=2, column=0, padx=5, pady=5)
+        frmSensorList.grid(row=3, column=0, padx=5, pady=5)
 
         # 3d vieuw
         frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
+        def cuboid_data(o, size=(1,1,1)):
+            print(size)
+            l, w, h = size
+            x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+                [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+                [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+                [o[0], o[0] + l, o[0] + l, o[0], o[0]]]  
+            y = [[o[1], o[1], o[1] + w, o[1] + w, o[1]],  
+                [o[1], o[1], o[1] + w, o[1] + w, o[1]],  
+                [o[1], o[1], o[1], o[1], o[1]],          
+                [o[1] + w, o[1] + w, o[1] + w, o[1] + w, o[1] + w]]   
+            z = [[o[2], o[2], o[2], o[2], o[2]],                       
+                [o[2] + h, o[2] + h, o[2] + h, o[2] + h, o[2] + h],   
+                [o[2], o[2], o[2] + h, o[2] + h, o[2]],               
+                [o[2], o[2], o[2] + h, o[2] + h, o[2]]]               
+            return np.array(x), np.array(y), np.array(z)
+
+        def plotCubeAt(pos=(0,0,0), size=(1,1,1), ax=None,**kwargs):
+            # Plotting a cube element at position pos
+            if ax !=None:
+                X, Y, Z = cuboid_data( pos, size )
+                ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
+
 
         fig = Figure(facecolor='xkcd:brown', dpi=100)
 
@@ -122,6 +175,7 @@ class StartPage(tk.Frame):
         ax.set_box_aspect(aspect=(x1, y1, z1))
 
         list = room.getSensors()
+        listObstacles = room.getObstacles()
 
         for i in list:
             t2 = i.getLocation()
@@ -135,13 +189,20 @@ class StartPage(tk.Frame):
                 ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
                 ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
                 ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
+        
+        for i in listObstacles:
+            t3 = i.getLocation()
+            x3, y3, z3, x4, y4, z4 = t3
+            positions = (x3,y3,z3)
+            sizes = (x4,y4,z4)
+            plotCubeAt(pos=positions, size=sizes, ax=ax)
 
         toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
         toolbar.update()
 
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
-        frm3Dview.grid(row=2, column=1, padx=5, pady=5)
+        frm3Dview.grid(row=2, column=3, padx=5, pady=5)
 
     def loadSensor(self, sensor, room, position):
         self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10,
@@ -159,6 +220,18 @@ class StartPage(tk.Frame):
         lblSensorValue.grid(row=0, column=1)
         btnEditSensor.grid(row=0, column=2)
 
+    def loadObstacle(self, obstacle, room, position):
+        self.obstacleFrames[str(room.id)][str(obstacle.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10, relief=tk.GROOVE, borderwidth=5)
+
+        lblObstacleName = ttk.Label(self.obstacleFrames[str(room.id)][str(obstacle.id)], text=obstacle.name)
+        btnEditObstacle = ttk.Button(self.obstacleFrames[str(room.id)][str(obstacle.id)], text="Edit", command=lambda: self.loadObstacleEditPage(room, obstacle))
+
+        print("Obstacle id",obstacle.id,"| Obstacle value:",obstacle.value)
+        self.obstacleFrames[str(room.id)][str(obstacle.id)].grid(row=position, column=0, sticky="nsew")
+
+        lblObstacleName.grid(row=0, column=0)
+        btnEditObstacle.grid(row=0, column=2)
+
     def post(self, data):
         pass
 
@@ -169,6 +242,14 @@ class StartPage(tk.Frame):
             'room': room
         }
         self.controller.show_frame(EditSensorPage, info)
+
+    def loadObstacleEditPage(self, room, obstacle):
+        self.controller.setValue([str(room.id), obstacle])
+        info = {
+            'obstacle': obstacle,
+            'room': room
+        }
+        self.controller.show_frame(EditObstaclePage, info)
 
 
 class EditRoomPage(tk.Frame):
@@ -439,4 +520,109 @@ class EditSensorPage(tk.Frame):
             self.entEditSensorX.insert(0, info['sensor'].x)
             self.entEditSensorY.insert(0, info['sensor'].y)
             self.entEditSensorZ.insert(0, info['sensor'].z)
+        pass
+
+class EditObstaclePage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        #dimensions
+        frmEditLocation = ttk.Frame(self)
+
+        lblEditObstacleName = ttk.Label(frmEditLocation, text="Name: ")
+        self.entEditObstacleName = ttk.Entry(frmEditLocation)
+        lblEditObstacleName.grid(row=0, column=0, padx=5, pady=5,)
+        self.entEditObstacleName.grid(row=0, column=1, padx=5, pady=5)
+
+        lblEditObstacleX1 = ttk.Label(frmEditLocation, text="X1: ")
+        self.entEditObstacleX1 = ttk.Entry(frmEditLocation)
+        lblEditObstacleX1.grid(row=1, column=0, padx=5, pady=5,)
+        self.entEditObstacleX1.grid(row=1, column=1, padx=5, pady=5)
+
+        lblEditObstacleY1 = ttk.Label(frmEditLocation, text="Y1: ")
+        self.entEditObstacleY1 = ttk.Entry(frmEditLocation)
+        lblEditObstacleY1.grid(row=2, column=0, padx=5, pady=5,)
+        self.entEditObstacleY1.grid(row=2, column=1, padx=5, pady=5)
+
+        lblEditObstacleZ1 = ttk.Label(frmEditLocation, text="Z1: ")
+        self.entEditObstacleZ1 = ttk.Entry(frmEditLocation)
+        lblEditObstacleZ1.grid(row=3, column=0, padx=5, pady=5,)
+        self.entEditObstacleZ1.grid(row=3, column=1, padx=5, pady=5)
+
+        lblEditObstacleX2 = ttk.Label(frmEditLocation, text="X2: ")
+        self.entEditObstacleX2 = ttk.Entry(frmEditLocation)
+        lblEditObstacleX2.grid(row=4, column=0, padx=5, pady=5,)
+        self.entEditObstacleX2.grid(row=4, column=1, padx=5, pady=5)
+
+        lblEditObstacleY2 = ttk.Label(frmEditLocation, text="Y2: ")
+        self.entEditObstacleY2 = ttk.Entry(frmEditLocation)
+        lblEditObstacleY2.grid(row=5, column=0, padx=5, pady=5,)
+        self.entEditObstacleY2.grid(row=5, column=1, padx=5, pady=5)
+
+        lblEditObstacleZ2 = ttk.Label(frmEditLocation, text="Z2: ")
+        self.entEditObstacleZ2 = ttk.Entry(frmEditLocation)
+        lblEditObstacleZ2.grid(row=6, column=0, padx=5, pady=5,)
+        self.entEditObstacleZ2.grid(row=6, column=1, padx=5, pady=5)
+
+        frmEditLocation.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+
+        #save and discard buttons
+        frmEditObstacleSaveOrDiscard = ttk.Frame(self)
+        btnEditObstacleSave = ttk.Button(frmEditObstacleSaveOrDiscard, text="Save and Exit", command=lambda: EditObstaclePage.saveAndExit(self, controller))
+        btnEditObstacleSave.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        btnEditObstacleDiscard = ttk.Button(frmEditObstacleSaveOrDiscard, text="Discard and Exit", command=lambda: EditObstaclePage.discardAndExit(self, controller))
+        btnEditObstacleDiscard.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+
+        frmEditObstacleSaveOrDiscard.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+
+
+    def insert(self, obstacle):
+        self.entEditObstacleName.insert(0, obstacle.name)
+    
+    def saveAndExit(self, controller):
+        name = self.entEditObstacleName.get()
+        obstacleX1 = self.entEditObstacleX1.get()
+        obstacleY1 = self.entEditObstacleY1.get()
+        obstacleZ1 = self.entEditObstacleZ1.get()
+        obstacleX2 = self.entEditObstacleX2.get()
+        obstacleY2 = self.entEditObstacleY2.get()
+        obstacleZ2 = self.entEditObstacleZ2.get()
+
+        self.entEditObstacleName.delete(0, tk.END)
+        self.entEditObstacleX1.delete(0, tk.END)
+        self.entEditObstacleY1.delete(0, tk.END)
+        self.entEditObstacleZ1.delete(0, tk.END)
+        self.entEditObstacleX2.delete(0, tk.END)
+        self.entEditObstacleY2.delete(0, tk.END)
+        self.entEditObstacleZ2.delete(0, tk.END)
+
+        print(controller.getValue()[1].id)
+        if(controller.getValue()[1].id != None):
+            controller.program.editObstacle(controller.getValue()[1].id, name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
+        else:
+            controller.program.addObstacle(controller.getValue()[0], name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
+        controller.show_frame(StartPage)
+
+        
+    def discardAndExit(self, controller):
+        self.entEditObstacleName.delete(0, tk.END)
+        self.entEditObstacleX1.delete(0, tk.END)
+        self.entEditObstacleY1.delete(0, tk.END)
+        self.entEditObstacleZ1.delete(0, tk.END)
+        self.entEditObstacleX2.delete(0, tk.END)
+        self.entEditObstacleY2.delete(0, tk.END)
+        self.entEditObstacleZ2.delete(0, tk.END)
+        controller.show_frame(StartPage)
+
+    def post(self, info):
+        self.room = info['room']
+
+        if(info['obstacle'].name != None):
+            self.entEditObstacleName.insert(0, info['obstacle'].name)
+            self.entEditObstacleX1.insert(0, info['obstacle'].x1)
+            self.entEditObstacleY1.insert(0, info['obstacle'].y1)
+            self.entEditObstacleZ1.insert(0, info['obstacle'].z1)
+            self.entEditObstacleX2.insert(0, info['obstacle'].x2)
+            self.entEditObstacleY2.insert(0, info['obstacle'].y2)
+            self.entEditObstacleZ2.insert(0, info['obstacle'].z2)
         pass

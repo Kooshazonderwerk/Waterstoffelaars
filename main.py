@@ -1,6 +1,7 @@
 import tkinter as tk
 from Room import Room
 from Sensor import Sensor
+from Obstacle import Obstacle
 from Program import Program
 from GuiPages import *
 
@@ -8,7 +9,8 @@ CLIENT_NAME = "waterstoffelaars"
 PAGES = (
 	StartPage,
 	EditRoomPage,
-	EditSensorPage
+	EditSensorPage,
+	EditObstaclePage
 )
 SERVER_URL = "http://localhost:5000"
 
