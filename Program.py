@@ -3,7 +3,8 @@ from Network import Network
 
 class Program:
 
-	def __init__(self, url):
+	def __init__(self, gui, url):
+		self.gui = gui
 		self.rooms = []
 		self.network = Network(url)
 
