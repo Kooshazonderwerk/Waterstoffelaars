@@ -69,6 +69,8 @@ class StartPage(tk.Frame):
             "height": h,
             "length": l,
         }
+        btnReload = ttk.Button(self, text="reload", command=lambda: self.reload())
+        btnReload.grid(row=0, column=1, padx=5, pady=5)
 
         btnEditRoom = ttk.Button(frmRoomInfo, text="Edit room",
                                  command=lambda: self.controller.show_frame(EditRoomPage, roomInfo))
@@ -181,14 +183,24 @@ class StartPage(tk.Frame):
             t2 = i.getLocation()
             x2, y2, z2 = t2
             ms = 20  # markersize
-            ax.plot(x2, y2, z2, 'or')
-            ax.plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
-            for x in range(5):
-                ax.plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-                ax.plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
-                ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
-                ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-                ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
+            if i.value < 0.1:
+                ax.plot(x2, y2, z2, 'o',color='#95A5A6', markersize=5)
+            if i.value > 0.1:
+                ax.plot(x2, y2, z2, 'o',color='g', markersize=10)
+            if i.value > 0.2:
+                ax.plot(x2, y2, z2, 'o',color='b',markersize=20)
+            if i.value > 0.4:
+                ax.plot(x2, y2, z2, 'o',color='#FF5733',markersize=40)
+            if i.value > 0.6:
+                ax.plot(x2, y2, z2, 'o',color='r',markersize=60)
+
+            # ax.plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
+            # for x in range(5):
+            #     ax.plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+            #     ax.plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
+            #     ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
+            #     ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+            #     ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
         
         for i in listObstacles:
             t3 = i.getLocation()
