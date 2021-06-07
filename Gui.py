@@ -28,7 +28,7 @@ class Gui(tk.Tk):
 		container.grid_columnconfigure(0, weight=1)
 		self.program = Program(self, SERVER_URL)
 		self.frames = {}
-
+		
 		for page in PAGES:
 			frame = page(container, self)
 
@@ -37,6 +37,8 @@ class Gui(tk.Tk):
 			frame.grid(row=0, column=0, sticky="nsew")
 
 		self.show_frame(StartPage)
+		self.updateSensorData(1,[1])
+		self.startThreads()
 
 	def show_frame(self, cont, post=None):
 		frame = self.frames[cont]
@@ -53,5 +55,12 @@ class Gui(tk.Tk):
 	def getValue(self):
 		return self.value
 
+	def updateSensorData(self, roomId, sensorValues):
+		startPage = self.frames[StartPage]
+		startPage.updateSensor(1, sensorValues[0])
 
+	def startThreads(self):
+		self.program.startThreads()
 	
+	def stopThreads(self):
+		self.program.stopThreads()

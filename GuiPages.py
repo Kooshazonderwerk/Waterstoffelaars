@@ -27,6 +27,7 @@ class StartPage(tk.Frame):
         self.roomFrames = {}
         self.sensorFrames = {}
         self.obstacleFrames = {}
+        self.sensorvalues = {}
 
         self.roomTabs = ttk.Notebook(self)
         self.loadRooms()
@@ -207,9 +208,10 @@ class StartPage(tk.Frame):
     def loadSensor(self, sensor, room, position):
         self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10,
                                                                     relief=tk.GROOVE, borderwidth=5)
-
+        text = tk.StringVar()
+        text.set(f"value: {sensor.value}")
         lblSensorName = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], text=sensor.name)
-        lblSensorValue = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], text=f"value: {sensor.value}")
+        lblSensorValue = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], textvariable=text)
         btnEditSensor = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit",
                                    command=lambda: self.loadSensorEditPage(room, sensor))
 
@@ -219,6 +221,7 @@ class StartPage(tk.Frame):
         lblSensorName.grid(row=0, column=0)
         lblSensorValue.grid(row=0, column=1)
         btnEditSensor.grid(row=0, column=2)
+        self.sensorvalues[str(sensor.id)] = text
 
     def loadObstacle(self, obstacle, room, position):
         self.obstacleFrames[str(room.id)][str(obstacle.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10, relief=tk.GROOVE, borderwidth=5)
@@ -251,6 +254,8 @@ class StartPage(tk.Frame):
         }
         self.controller.show_frame(EditObstaclePage, info)
 
+    def updateSensor(self, sensorId, sensorValue):
+        self.sensorvalues[str(sensorId)].set(sensorValue)
 
 class EditRoomPage(tk.Frame):
     def __init__(self, parent, controller):
