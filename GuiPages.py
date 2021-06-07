@@ -94,7 +94,7 @@ class StartPage(tk.Frame):
         btnAddObstacle = ttk.Button(frmObstacleAdd, text="Add Obstacle", 
                                     command=lambda: self.loadObstacleEditPage(room, Obstacle(None, None, 0, 0, 0, 0, 0, 0)))
         btnAddObstacle.pack(side=tk.LEFT)
-        frmObstacleAdd.grid(row=2, column=0, padx=5, pady=5)
+        frmObstacleAdd.grid(row=1, column=1, padx=5, pady=5)
 
         #Obstacle list
         frmObstacleList = ttk.Frame(self.roomFrames[str(room.id)])
@@ -113,7 +113,7 @@ class StartPage(tk.Frame):
         canvasObstacleList.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbarObstacleList.pack(side=tk.RIGHT, fill="y")
 
-        frmObstacleList.grid(row=3, column=1, padx=5, pady=5)
+        frmObstacleList.grid(row=2, column=1, padx=5, pady=5)
 
         # sensor list
         frmSensorList = ttk.Frame(self.roomFrames[str(room.id)])
@@ -132,7 +132,7 @@ class StartPage(tk.Frame):
         canvasSensorList.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbarSensorList.pack(side=tk.RIGHT, fill="y")
 
-        frmSensorList.grid(row=3, column=0, padx=5, pady=5)
+        frmSensorList.grid(row=2, column=0, padx=5, pady=5)
 
         # 3d view
         frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
