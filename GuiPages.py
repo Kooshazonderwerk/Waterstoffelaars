@@ -19,6 +19,9 @@ from matplotlib.figure import Figure
 #         tk.Frame.__init__(self, parent)
 
 class StartPage(tk.Frame):
+
+    currentView = np.array([], np.int)
+    
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
@@ -39,8 +42,12 @@ class StartPage(tk.Frame):
     def loadRooms(self):
         self.controller.program.addRoomsFromNetwork()
         rooms = self.controller.program.getRooms()
+        
         for room in rooms:
+            print(room.id-1)
+            self.currentView = np.append(self.currentView, 1)
             self.loadRoom(room)
+        
 
     def loadRoom(self, room):
         self.sensorFrames[str(room.id)] = {}
@@ -134,19 +141,46 @@ class StartPage(tk.Frame):
 
         frmSensorList.grid(row=2, column=0, padx=5, pady=5)
 
-        # 3d view
-        frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
+        #Change view button
+        frmViewChange = ttk.Frame(self.roomFrames[str(room.id)])
+        btnChangeView = ttk.Button(frmViewChange, text="2D <-> 3D",
+                                    command=lambda: changeView())
+        btnChangeView.pack(side=tk.LEFT)
+        frmViewChange.grid(row=1, column=3, padx=5, pady=5)
 
+        
         visual = Visualization()
-        canvas = FigureCanvasTkAgg(visual.dddView(room), master=frm3Dview)
-        canvas.draw()
+        
+        def changeView():
+            print("room: " + str(room.id-1))
+            print("view: " + str(self.currentView[room.id-1]))
+            if self.currentView[room.id-1] == 0:
+                self.currentView[room.id-1] = 1
+                frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
+                canvas = FigureCanvasTkAgg(visual.view3D(room), master=frm3Dview)
+                canvas.draw()
 
-        toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
-        toolbar.update()
+                toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
+                toolbar.update()
+                canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+                frm3Dview.grid(row=2, column=3, padx=5, pady=5)
 
-        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+            else:
+                self.currentView[room.id-1] = 0
+                frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
+                canvas = FigureCanvasTkAgg(visual.view2D(room), master=frm2Dview)
+                canvas.draw()
 
-        frm3Dview.grid(row=2, column=3, padx=5, pady=5)
+                toolbar = NavigationToolbar2Tk(canvas, frm2Dview)
+                toolbar.update()
+                canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+                frm2Dview.grid(row=2, column=3, padx=5, pady=5)
+                
+
+        changeView()
+        
+
+    
 
     def loadSensor(self, sensor, room, position):
         self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10,

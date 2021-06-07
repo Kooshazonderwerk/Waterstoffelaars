@@ -5,8 +5,11 @@ from matplotlib.backends.backend_tkagg import (
 from matplotlib.figure import Figure
 
 class Visualization:
-        
-    def dddView(self, room):
+    def view2D(self, room):
+        fig = Figure(facecolor='xkcd:brown', dpi=100)
+        return fig
+
+    def view3D(self, room):
         
         fig = Figure(facecolor='xkcd:brown', dpi=100)
 
