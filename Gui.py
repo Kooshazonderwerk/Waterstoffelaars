@@ -37,7 +37,6 @@ class Gui(tk.Tk):
 			frame.grid(row=0, column=0, sticky="nsew")
 
 		self.show_frame(StartPage)
-		self.updateSensorData(1,[1])
 		self.startThreads()
 
 	def show_frame(self, cont, post=None):
@@ -55,9 +54,15 @@ class Gui(tk.Tk):
 	def getValue(self):
 		return self.value
 
-	def updateSensorData(self, roomId, sensorValues):
+	def updateSensorValue(self, roomId, sensorValues):
 		startPage = self.frames[StartPage]
-		startPage.updateSensor(1, sensorValues[0])
+		for sensor in sensorValues:
+			startPage.updateSensorValue(sensor['id'], sensor['value'])
+	
+	def updateRoomData(self, roomId, roomInfo):
+		startPage = self.frames[StartPage]
+		startPage.updateRoom(roomId, roomInfo)
+
 
 	def startThreads(self):
 		self.program.startThreads()

@@ -28,6 +28,8 @@ class StartPage(tk.Frame):
         self.sensorFrames = {}
         self.obstacleFrames = {}
         self.sensorvalues = {}
+        self.roomInfoText = {}
+        self.sensorInfoTexts = {}
 
         self.roomTabs = ttk.Notebook(self)
         self.loadRooms()
@@ -39,10 +41,18 @@ class StartPage(tk.Frame):
     def loadRooms(self):
         self.controller.program.addRoomsFromNetwork()
         rooms = self.controller.program.getRooms()
-        for room in rooms:
-            self.loadRoom(room)
+        for roomId in rooms:
+            self.loadRoom(rooms[roomId])
 
     def loadRoom(self, room):
+        self.roomInfoText[room.id] = {
+            "id": tk.StringVar(),
+            "name": tk.StringVar(),
+            "width": tk.StringVar(),
+            "height": tk.StringVar(),
+            "length": tk.StringVar(),
+        }
+        self.roomInfoText[room.id]['id'].set(f"room {str(room.id)}")
         self.sensorFrames[str(room.id)] = {}
         self.obstacleFrames[str(room.id)] = {}
         # future add room check
@@ -59,10 +69,9 @@ class StartPage(tk.Frame):
         frmLegend.grid(row=0, column=0, padx=5, pady=5)
         # Room info frame
         frmRoomInfo = ttk.Frame(self.roomFrames[str(room.id)])
-        lblRoomInfoName = ttk.Label(frmRoomInfo, text=f"room {str(room.id)}")
+        lblRoomInfoName = ttk.Label(frmRoomInfo, textvariable=self.roomInfoText[room.id]['id'])
 
         l, w, h = room.getDimensions()
-
         roomInfo = {
             "id": room.id,
             "name": room.name,
@@ -209,8 +218,14 @@ class StartPage(tk.Frame):
         self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10,
                                                                     relief=tk.GROOVE, borderwidth=5)
         text = tk.StringVar()
+        sensorInfo = {
+            'id': tk.StringVar(),
+            'name': tk.StringVar()
+
+        }
         text.set(f"value: {sensor.value}")
-        lblSensorName = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], text=sensor.name)
+        sensorInfo['name'].set(sensor.name)
+        lblSensorName = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], textvariable=sensorInfo['name'])
         lblSensorValue = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], textvariable=text)
         btnEditSensor = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit",
                                    command=lambda: self.loadSensorEditPage(room, sensor))
@@ -222,6 +237,7 @@ class StartPage(tk.Frame):
         lblSensorValue.grid(row=0, column=1)
         btnEditSensor.grid(row=0, column=2)
         self.sensorvalues[str(sensor.id)] = text
+        self.sensorInfoTexts[sensor.id] = sensorInfo
 
     def loadObstacle(self, obstacle, room, position):
         self.obstacleFrames[str(room.id)][str(obstacle.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10, relief=tk.GROOVE, borderwidth=5)
@@ -254,8 +270,26 @@ class StartPage(tk.Frame):
         }
         self.controller.show_frame(EditObstaclePage, info)
 
-    def updateSensor(self, sensorId, sensorValue):
+    def updateSensorValue(self, sensorId, sensorValue):
         self.sensorvalues[str(sensorId)].set(sensorValue)
+    
+    def updateRoom(self, roomId, roomInfo):
+        print(roomId)
+        self.roomInfoText[roomId]['id'].set(f"room {str(roomInfo['id'])}")
+        self.updateSensors(roomId) #when the rooms get updated the sensors goes as well.
+    
+    def updateSensors(self, roomId):
+        room = self.controller.program.getRoom(roomId)
+        for index, sensor in enumerate(room.getSensors()):
+            if sensor.getId() in self.sensorInfoTexts:
+                self.updateSensor(sensor)
+            else:
+                self.loadSensor(sensor, room, index)
+    
+    def updateSensor(self, sensor):
+        sensorId = sensor.getId()
+        self.sensorInfoTexts[sensorId]['name'].set(sensor.getName())
+            
 
 class EditRoomPage(tk.Frame):
     def __init__(self, parent, controller):

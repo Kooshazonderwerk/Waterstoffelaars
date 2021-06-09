@@ -6,23 +6,26 @@ class Program:
 
 	def __init__(self, gui, url):
 		self.gui = gui
-		self.rooms = []
+		self.roomsOld = []
+		self.rooms = {}
 		self.network = Network(url)
 		self.roomCount = 0
 		self.webSockets = []
 		self.addRoomsFromNetwork()
-		for x in range(self.roomCount):
-			self.webSockets.append(SocketClient(url, self, 1))
+		for room in self.roomsOld:
+			self.webSockets.append(SocketClient(url, self, room))
 
 	def getRooms(self):
 		return self.rooms
 
 	def addRoom(self, room):
-		self.rooms.append(Room(room['id'], room['name'], room['length'], room['width'], room['height'], room['sensors'], room['obstacles']))
+		newRoom = Room(room['id'], room['name'], room['length'], room['width'], room['height'], room['sensors'], room['obstacles'])
+		self.roomsOld.append(newRoom)
+		self.rooms[room['id']] = Room(room['id'], room['name'], room['length'], room['width'], room['height'], room['sensors'], room['obstacles'])
 
 	def addRoomsFromNetwork(self):
 		rooms = self.network.getRooms()
-		self.rooms = []
+		self.roomsOld = []
 		self.roomCount = 0
 		for room in rooms:
 			self.roomCount += 1
@@ -46,8 +49,8 @@ class Program:
 	def addObstacle(self, roomId, name, x1, y1, z1, x2, y2, z2):
 		self.network.addObstacle(roomId, name, x1, y1, z1, x2, y2, z2)
 
-	def updateSensorData(self, roomId, sensorValues):
-		self.gui.updateSensorData(roomId, sensorValues)
+	def updateSensorValue(self, roomId, sensorValues):
+		self.gui.updateSensorValue(roomId, sensorValues)
 	
 	def startThreads(self):
 		for t in self.webSockets:
@@ -56,3 +59,11 @@ class Program:
 		for t in self.webSockets:
 			t.stopThread()
 			t.join()
+	
+	def updateRoomData(self, roomId, roomInfo):
+		newRoom = Room(roomInfo['id'], roomInfo['name'], roomInfo['length'], roomInfo['width'], roomInfo['height'], roomInfo['sensors'], roomInfo['obstacles'])
+		self.rooms[roomId] = newRoom
+		self.gui.updateRoomData(roomId, roomInfo)
+	
+	def getRoom(self, roomId):
+		return self.rooms[roomId]
