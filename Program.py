@@ -55,10 +55,6 @@ class Program:
 	def startThreads(self):
 		for t in self.webSockets:
 			t.start()
-	def stopThreads(self):
-		for t in self.webSockets:
-			t.stopThread()
-			t.join()
 	
 	def updateRoomData(self, roomId, roomInfo):
 		newRoom = Room(roomInfo['id'], roomInfo['name'], roomInfo['length'], roomInfo['width'], roomInfo['height'], roomInfo['sensors'], roomInfo['obstacles'])

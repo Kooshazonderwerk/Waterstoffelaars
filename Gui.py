@@ -66,6 +66,3 @@ class Gui(tk.Tk):
 
 	def startThreads(self):
 		self.program.startThreads()
-	
-	def stopThreads(self):
-		self.program.stopThreads()

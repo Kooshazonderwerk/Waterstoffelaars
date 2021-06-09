@@ -12,6 +12,7 @@ class SocketClient(Thread):
         self.running = False
         self.counter = 0
         Thread.__init__(self)
+        self.daemon = True
         self.getRoomData()
 
     def run(self):
