@@ -6,26 +6,22 @@ class Program:
 
 	def __init__(self, gui, url):
 		self.gui = gui
-		self.roomsOld = []
 		self.rooms = {}
 		self.network = Network(url)
 		self.roomCount = 0
 		self.webSockets = []
 		self.addRoomsFromNetwork()
-		for room in self.roomsOld:
-			self.webSockets.append(SocketClient(url, self, room))
+		for key in self.rooms:
+			self.webSockets.append(SocketClient(url, self, self.rooms[key]))
 
 	def getRooms(self):
 		return self.rooms
 
 	def addRoom(self, room):
-		newRoom = Room(room['id'], room['name'], room['length'], room['width'], room['height'], room['sensors'], room['obstacles'])
-		self.roomsOld.append(newRoom)
 		self.rooms[room['id']] = Room(room['id'], room['name'], room['length'], room['width'], room['height'], room['sensors'], room['obstacles'])
 
 	def addRoomsFromNetwork(self):
 		rooms = self.network.getRooms()
-		self.roomsOld = []
 		self.roomCount = 0
 		for room in rooms:
 			self.roomCount += 1

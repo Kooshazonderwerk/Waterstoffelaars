@@ -31,8 +31,6 @@ class SocketClient(Thread):
             'value':random.random()})
         self.program.updateSensorValue(self.room.getId(), sensorValues)
     
-    def stopThread(self):
-        self.running = False
 
     def updateRoomData(self):
         roominfo = self.getRoomData()
@@ -41,42 +39,58 @@ class SocketClient(Thread):
     def getRoomData(self):
         # print(dir(self.room))
         return {
-            'height': 100, 
-            'id': self.counter, 
-            'length': 100, 
-            'name': 'test', 
-            'obstacles': [], 
-            'sensors': [{
-                'id': 1, 
-                'name': str(self.counter), 
-                'x': 30, 
-                'y': 20, 
-                'z': 10}, 
-                {
-                'id': 2, 
-                'name': 'test', 
-                'x': 32, 
-                'y': 23, 
-                'z': 23}, 
-                {
-                'id': 3, 
-                'name': 'test', 
-                'x': 36, 
-                'y': 23, 
-                'z': 23}, 
-                {
-                'id': 4, 
-                'name': 'test', 
-                'x': 12, 
-                'y': 12, 
-                'z': 12}, 
-                {
-                'id': 5, 
-                'name': 
-                'test', 
-                'x': 21, 
-                'y': 24, 
-                'z': 23}], 
-            'width': 100}
-    
-    
+        "height": 40,
+        "id": self.counter,
+        "length": 50,
+        "name": "test",
+        "obstacles": [
+            {
+                "id": 1,
+                "name": f"test {str(self.counter)}",
+                "x1": 23,
+                "x2": 23,
+                "y1": 23,
+                "y2": 23,
+                "z1": 23,
+                "z2": 23
+            }
+        ],
+        "sensors": [
+            {
+                "id": 1,
+                "name": f"test {str(self.counter)}",
+                "x": 30,
+                "y": 20,
+                "z": 10
+            },
+            {
+                "id": 2,
+                "name": "test",
+                "x": 32,
+                "y": 23,
+                "z": 23
+            },
+            {
+                "id": 3,
+                "name": "test",
+                "x": 36,
+                "y": 23,
+                "z": 23
+            },
+            {
+                "id": 4,
+                "name": "test",
+                "x": 12,
+                "y": 12,
+                "z": 12
+            },
+            {
+                "id": 5,
+                "name": "test",
+                "x": 21,
+                "y": 24,
+                "z": 23
+            }
+        ],
+        "width": 50
+    }
