@@ -250,7 +250,6 @@ class StartPage(tk.Frame):
         lblObstacleName = ttk.Label(self.obstacleFrames[str(room.id)][str(obstacle.id)], textvariable=obstacleInfo['name'])
         btnEditObstacle = ttk.Button(self.obstacleFrames[str(room.id)][str(obstacle.id)], text="Edit", command=lambda: self.loadObstacleEditPage(room, obstacle))
 
-        print("Obstacle id",obstacle.id,"| Obstacle value:",obstacle.value)
         self.obstacleFrames[str(room.id)][str(obstacle.id)].grid(row=position, column=0, sticky="nsew")
 
         lblObstacleName.grid(row=0, column=0)
