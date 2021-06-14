@@ -1,18 +1,20 @@
 from Room import Room
 from Network import Network
 from SocketClient import SocketClient
+from SocketClientHandler import *
 
 class Program:
-
 	def __init__(self, gui, url):
 		self.gui = gui
 		self.rooms = {}
 		self.network = Network(url)
 		self.roomCount = 0
 		self.webSockets = []
-		self.addRoomsFromNetwork()
+		# self.addRoomsFromNetwork()
+		self.socketconn = SocketClientHandler()
+		print('my sid is', self.socketconn.sio.sid)
 		for key in self.rooms:
-			self.webSockets.append(SocketClient(url, self, self.rooms[key]))
+			self.webSockets.append(SocketClient(url, self, self.rooms[key], self.socketconn))
 
 	def getRooms(self):
 		return self.rooms
@@ -45,14 +47,7 @@ class Program:
 	def addObstacle(self, roomId, name, x1, y1, z1, x2, y2, z2):
 		self.network.addObstacle(roomId, name, x1, y1, z1, x2, y2, z2)
 
-	def getRoom(self, roomId):
-		return self.rooms[roomId]
-
 	def updateSensorValue(self, roomId, sensorValues):
-		room = self.getRoom(roomId)
-		for sensorValue in sensorValues:
-			sensor = room.getSensor(sensorValue['id'])
-			sensor.setValue(sensorValue['value'])
 		self.gui.updateSensorValue(roomId, sensorValues)
 	
 	def startThreads(self):

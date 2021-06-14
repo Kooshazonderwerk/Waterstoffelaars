@@ -10,6 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
+import json
 
 
 #  future plans
@@ -41,7 +42,10 @@ class StartPage(tk.Frame):
 
     def loadRooms(self):
         self.controller.program.addRoomsFromNetwork()
+        roomsjson = self.controller.program.socketconn.getAllRooms()
         rooms = self.controller.program.getRooms()
+        print(roomsjson)
+        print(rooms)
         for roomId in rooms:
             self.loadRoom(rooms[roomId])
 
@@ -145,7 +149,7 @@ class StartPage(tk.Frame):
         # 3d vieuw
         frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
         def cuboid_data(o, size=(1,1,1)):
-            print(size)
+            # print(size)
             l, w, h = size
             x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  
                 [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
@@ -231,7 +235,7 @@ class StartPage(tk.Frame):
         btnEditSensor = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit",
                                    command=lambda: self.loadSensorEditPage(room, sensor))
 
-        print("Sensor id", sensor.id, "| Sensor value:", sensor.value)
+        # print("Sensor id", sensor.id, "| Sensor value:", sensor.value)
         self.sensorFrames[str(room.id)][str(sensor.id)].grid(row=position, column=0, sticky="nsew")
 
         lblSensorName.grid(row=0, column=0)
@@ -250,6 +254,7 @@ class StartPage(tk.Frame):
         lblObstacleName = ttk.Label(self.obstacleFrames[str(room.id)][str(obstacle.id)], textvariable=obstacleInfo['name'])
         btnEditObstacle = ttk.Button(self.obstacleFrames[str(room.id)][str(obstacle.id)], text="Edit", command=lambda: self.loadObstacleEditPage(room, obstacle))
 
+        # print("Obstacle id",obstacle.id,"| Obstacle value:",obstacle.value)
         self.obstacleFrames[str(room.id)][str(obstacle.id)].grid(row=position, column=0, sticky="nsew")
 
         lblObstacleName.grid(row=0, column=0)
@@ -280,7 +285,7 @@ class StartPage(tk.Frame):
         self.sensorvalues[str(sensorId)].set(sensorValue)
     
     def updateRoom(self, roomId, roomInfo):
-        print(roomId)
+        # print(roomId)
         self.roomInfoText[roomId]['id'].set(f"room {str(roomInfo['id'])}")
         self.updateSensors(roomId) #when the rooms get updated the sensors goes as well.
         self.updateObstacles(roomId)
@@ -372,7 +377,7 @@ class EditRoomPage(tk.Frame):
         roomX = self.entEditRoomWidth.get()
         roomZ = self.entEditRoomLength.get()
         roomY = self.entEditRoomHeight.get()
-        print(roomName)
+        # print(roomName)
         # debugging^
         self.entEditRoomName.delete(0, tk.END)
         self.entEditRoomWidth.delete(0, tk.END)
@@ -556,7 +561,7 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorY.delete(0, tk.END)
         self.entEditSensorZ.delete(0, tk.END)
 
-        print(controller.getValue()[1].id)
+        # print(controller.getValue()[1].id)
         if (controller.getValue()[1].id != None):
             controller.program.editSensor(controller.getValue()[1].id, name, sensorX, sensorY, sensorZ)
         else:
@@ -654,7 +659,7 @@ class EditObstaclePage(tk.Frame):
         self.entEditObstacleY2.delete(0, tk.END)
         self.entEditObstacleZ2.delete(0, tk.END)
 
-        print(controller.getValue()[1].id)
+        # print(controller.getValue()[1].id)
         if(controller.getValue()[1].id != None):
             controller.program.editObstacle(controller.getValue()[1].id, name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
         else:

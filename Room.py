@@ -26,14 +26,6 @@ class Room:
 	'''returns a list with all sensors currently holded by the Room object'''
 	def getSensors(self):
 		return self.sensorList
-		
-	'''takes a sensor id and returns the corresponding sensor'''
-	def getSensor(self, sensorId):
-		for sensor in self.sensorList:
-			if(sensor.getId() == sensorId):
-				return sensor
-		print('error: no sensor found with id: '+ sensorId) #ERRORHANDELING
-		return None
 
 	'''Takes a object of type Obstacle and adds it to the list of obstacles'''
 	def addObstacle(self, obstacle):
@@ -59,3 +51,6 @@ class Room:
 	'''returns a string with the id stored in the Room object'''
 	def getId(self):
 		return self.id
+
+	def getName(self):
+		return self.name

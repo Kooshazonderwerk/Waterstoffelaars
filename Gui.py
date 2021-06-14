@@ -38,7 +38,7 @@ class Gui(tk.Tk):
 
 		self.show_frame(StartPage)
 		self.startThreads()
-
+		
 	def show_frame(self, cont, post=None):
 		frame = self.frames[cont]
 		frame.tkraise()
