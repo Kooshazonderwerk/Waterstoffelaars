@@ -21,7 +21,7 @@ class SocketClient(Thread):
             time.sleep(1)
             self.counter += 1
             self.updateSensorValue()
-            self.updateRoomData()
+            # self.updateRoomData()
             print('test123')
 
     def updateSensorValue(self):

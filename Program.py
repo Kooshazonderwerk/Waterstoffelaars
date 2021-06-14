@@ -45,7 +45,14 @@ class Program:
 	def addObstacle(self, roomId, name, x1, y1, z1, x2, y2, z2):
 		self.network.addObstacle(roomId, name, x1, y1, z1, x2, y2, z2)
 
+	def getRoom(self, roomId):
+		return self.rooms[roomId]
+
 	def updateSensorValue(self, roomId, sensorValues):
+		room = self.getRoom(roomId)
+		for sensorValue in sensorValues:
+			sensor = room.getSensor(sensorValue['id'])
+			sensor.setValue(sensorValue['value'])
 		self.gui.updateSensorValue(roomId, sensorValues)
 	
 	def startThreads(self):
