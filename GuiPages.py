@@ -43,9 +43,11 @@ class StartPage(tk.Frame):
     def loadRooms(self):
         self.controller.program.addRoomsFromNetwork()
         roomsjson = self.controller.program.socketconn.getAllRooms()
+        # print("test: " + str(roomsjson))
         rooms = self.controller.program.getRooms()
-        print(roomsjson)
-        print(rooms)
+        # print(roomsjson)
+        # print(rooms)
+        # print("test: " + str(roomsjson))
         for roomId in rooms:
             self.loadRoom(rooms[roomId])
 

@@ -7,7 +7,7 @@ class SocketClientHandler():
     def __init__(self):
         #Start connect, print info and send message 
         self.sio.connect('http://localhost:5001')
-
+        self.sio.on('json', self.handle_json)
     #Default socketIO events
     #-------------------------------------------------------------------------#
     @sio.event
@@ -30,8 +30,8 @@ class SocketClientHandler():
     def json(data):
         print('Message from SocketIO server: ' + data)
 
-    @sio.on('json')
-    def handle_json(json):
+    def handle_json(self, json):
+        # return json
         print('received json: ' + str(json))
 
     #-------------------------------------------------------------------------#
