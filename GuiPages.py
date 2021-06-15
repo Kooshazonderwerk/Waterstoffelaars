@@ -12,6 +12,8 @@ from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
 
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-white')
 
 #  future plans
 # class GuiPage(tk.Frame):
@@ -21,7 +23,7 @@ from matplotlib.figure import Figure
 class StartPage(tk.Frame):
 
     currentView = np.array([], np.int)
-    
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
@@ -168,7 +170,8 @@ class StartPage(tk.Frame):
             else:
                 self.currentView[room.id-1] = 0
                 frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
-                canvas = FigureCanvasTkAgg(visual.view2D(room), master=frm2Dview)
+                
+                canvas = FigureCanvasTkAgg(visual.view2D(room, 10), master=frm2Dview)
                 canvas.draw()
 
                 toolbar = NavigationToolbar2Tk(canvas, frm2Dview)

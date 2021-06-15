@@ -4,9 +4,55 @@ from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
 
+import matplotlib.pyplot as plt
+from numpy import equal, linalg
+plt.style.use('seaborn-white')
+
 class Visualization:
-    def view2D(self, room):
-        fig = Figure(facecolor='xkcd:brown', dpi=100)
+
+    def calcPointValue(self, sensorLocations, sensorValues, x, y, z):
+        p = 2
+        
+        A = 0
+        for index, sensor in enumerate(sensorLocations):
+            A += 1/np.power(self.distance(x, y, z, sensor), p)*sensorValues[index]
+
+        B = 0
+        for sensor in sensorLocations:
+            B += 1/np.power(self.distance(x, y, z, sensor), p)
+    
+        return A / B
+
+    def distance(self, x, y, z, other):
+        return np.sqrt(np.sum(np.square(np.array([x, y, z]) - np.array(other))))
+
+    def view2D(self, room, slice):
+        fig = plt.figure()
+
+        l, w, h = room.getDimensions()
+        x = np.linspace(0, l, l*10)
+        y = np.linspace(0, w, w*10)
+        X, Y = np.meshgrid(x, y)
+        
+        sensorLocations = []
+        sensorValues = []
+        for sensor in room.getSensors():
+            sX, sY, sZ = sensor.getLocation()
+            temp = [sX, sY, sZ]
+            sensorLocations.append(temp)
+            sensorValues.append(sensor.getValue())
+
+        Z = []
+        for indey, yC in enumerate(y):
+            Z.append([])
+            for xC in x:
+                arr = Z[int(indey)]               
+                arr.append(self.calcPointValue(sensorLocations, sensorValues, xC, yC, slice))
+        
+        plt.axes().set_aspect('equal', 'box')
+        plt.contourf(X, Y, Z, 40, cmap='viridis')
+        plt.colorbar()     
+
         return fig
 
     def view3D(self, room):
