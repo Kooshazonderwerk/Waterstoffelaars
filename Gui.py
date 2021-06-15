@@ -63,6 +63,10 @@ class Gui(tk.Tk):
 		startPage = self.frames[StartPage]
 		startPage.updateRoom(roomId, roomInfo)
 
+	def updateRooms(self):
+		startPage = self.frames[StartPage]
+		startPage.reload()
+
 
 	def startThreads(self):
 		self.program.startThreads()

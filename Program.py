@@ -11,7 +11,7 @@ class Program:
 		self.roomCount = 0
 		self.webSockets = []
 		# self.addRoomsFromNetwork()
-		self.socketconn = SocketClientHandler()
+		self.socketconn = SocketClientHandler(self)
 		print('my sid is', self.socketconn.sio.sid)
 		for key in self.rooms:
 			self.webSockets.append(SocketClient(url, self, self.rooms[key], self.socketconn))
@@ -21,6 +21,14 @@ class Program:
 
 	def addRoom(self, room):
 		self.rooms[room['id']] = Room(room['id'], room['name'], room['length'], room['width'], room['height'], room['sensors'], room['obstacles'])
+
+	def addRooms(self, rooms):
+		for room in rooms:
+			self.addRoom(room)
+	
+	def updateRooms(self, rooms):
+		self.addrooms(rooms)
+		self.gui.updateRooms()
 
 	def addRoomsFromNetwork(self):
 		rooms = self.network.getRooms()

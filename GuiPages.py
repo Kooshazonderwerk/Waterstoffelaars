@@ -34,15 +34,15 @@ class StartPage(tk.Frame):
         self.obstacleInfoTexts = {}
 
         self.roomTabs = ttk.Notebook(self)
-        self.loadRooms()
+        # self.loadRooms()
+        self.controller.program.socketconn.getAllRooms()
 
     def reload(self):
         self.roomTabs = ttk.Notebook(self)
         self.loadRooms()
 
     def loadRooms(self):
-        self.controller.program.addRoomsFromNetwork()
-        roomsjson = self.controller.program.socketconn.getAllRooms()
+        # self.controller.program.addRoomsFromNetwork()
         # print("test: " + str(roomsjson))
         rooms = self.controller.program.getRooms()
         # print(roomsjson)
