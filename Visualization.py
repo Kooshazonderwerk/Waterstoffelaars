@@ -10,23 +10,25 @@ plt.style.use('seaborn-white')
 
 class Visualization:
 
-    def calcPointValue(self, sensorLocations, sensorValues, x, y, z):
-        p = 2
+    def calcPointValue(self, sensorLocations, sensorValues, x, y, z, p):
         
         A = 0
-        for index, sensor in enumerate(sensorLocations):
-            A += 1/np.power(self.distance(x, y, z, sensor), p)*sensorValues[index]
-
         B = 0
-        for sensor in sensorLocations:
-            B += 1/np.power(self.distance(x, y, z, sensor), p)
+        for index, sensor in enumerate(sensorLocations):
+            C = 1/np.power(self.distance(x, y, z, sensor), p)
+            A += C*sensorValues[index]
+            B += C
+
+        #B = 0
+        #for sensor in sensorLocations:
+        #    B += 1/np.power(self.distance(x, y, z, sensor), p)
     
         return A / B
 
     def distance(self, x, y, z, other):
         return np.sqrt(np.sum(np.square(np.array([x, y, z]) - np.array(other))))
 
-    def view2D(self, room, slice):
+    def view2D(self, room, slice, p):
         fig = plt.figure()
 
         l, w, h = room.getDimensions()
@@ -47,7 +49,7 @@ class Visualization:
             Z.append([])
             for xC in x:
                 arr = Z[int(indey)]               
-                arr.append(self.calcPointValue(sensorLocations, sensorValues, xC, yC, slice))
+                arr.append(self.calcPointValue(sensorLocations, sensorValues, xC, yC, slice, p))
         
         plt.axes().set_aspect('equal', 'box')
         plt.contourf(X, Y, Z, 40, cmap='viridis')

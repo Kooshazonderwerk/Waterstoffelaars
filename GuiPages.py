@@ -147,10 +147,12 @@ class StartPage(tk.Frame):
         frmViewChange = ttk.Frame(self.roomFrames[str(room.id)])
         btnChangeView = ttk.Button(frmViewChange, text="2D <-> 3D",
                                     command=lambda: changeView())
-        btnChangeView.pack(side=tk.LEFT)
+        btnChangeView.pack(fill=tk.Y, side=tk.LEFT)
         frmViewChange.grid(row=1, column=3, padx=5, pady=5)
 
-        
+        #for 2d, temp
+        z = 5
+        p = 4 
         visual = Visualization()
         
         def changeView():
@@ -171,7 +173,7 @@ class StartPage(tk.Frame):
                 self.currentView[room.id-1] = 0
                 frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
                 
-                canvas = FigureCanvasTkAgg(visual.view2D(room, 10), master=frm2Dview)
+                canvas = FigureCanvasTkAgg(visual.view2D(room, z, p), master=frm2Dview)
                 canvas.draw()
 
                 toolbar = NavigationToolbar2Tk(canvas, frm2Dview)
