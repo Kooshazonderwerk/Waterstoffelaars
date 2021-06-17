@@ -23,6 +23,7 @@ plt.style.use('seaborn-white')
 class StartPage(tk.Frame):
 
     currentView = np.array([], np.int)
+    view = np.array([], np.int)
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -48,6 +49,7 @@ class StartPage(tk.Frame):
         for room in rooms:
             print(room.id-1)
             self.currentView = np.append(self.currentView, 1)
+            self.view = np.append(self.view, 0)
             self.loadRoom(room)
         
 
@@ -150,11 +152,30 @@ class StartPage(tk.Frame):
         btnChangeView.pack(fill=tk.Y, side=tk.LEFT)
         frmViewChange.grid(row=1, column=3, padx=5, pady=5)
 
+        btnTop = ttk.Button(frmViewChange, text="Top",
+                                   command=lambda: view(0))
+        btnTop.pack(fill=tk.Y, side=tk.LEFT)
+
+        btnLeft = ttk.Button(frmViewChange, text="Left",
+                                    command=lambda: view(1))
+        btnLeft.pack(fill=tk.Y, side=tk.LEFT)
+
+        btnRight = ttk.Button(frmViewChange, text="Right",
+                                    command=lambda: view(2))
+        btnRight.pack(fill=tk.Y, side=tk.LEFT)
+
         #for 2d, temp
         z = 5
-        p = 4 
+
+        #variable for inverse distance weighting
+        p = 16 
+
         visual = Visualization()
-        
+              
+        def view(side):
+            self.view[room.id-1] = side
+            show2D()
+
         def changeView():
             print("room: " + str(room.id-1))
             print("view: " + str(self.currentView[room.id-1]))
@@ -171,17 +192,20 @@ class StartPage(tk.Frame):
 
             else:
                 self.currentView[room.id-1] = 0
+                show2D()
+                
+        def show2D():
                 frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
                 
-                canvas = FigureCanvasTkAgg(visual.view2D(room, z, p), master=frm2Dview)
+                canvas = FigureCanvasTkAgg(visual.view2D(room, z, p, self.view[room.id-1]), master=frm2Dview)
                 canvas.draw()
 
                 toolbar = NavigationToolbar2Tk(canvas, frm2Dview)
                 toolbar.update()
                 canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
                 frm2Dview.grid(row=2, column=3, padx=5, pady=5)
-                
 
+            
         changeView()
         
 

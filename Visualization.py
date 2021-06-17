@@ -28,10 +28,16 @@ class Visualization:
     def distance(self, x, y, z, other):
         return np.sqrt(np.sum(np.square(np.array([x, y, z]) - np.array(other))))
 
-    def view2D(self, room, slice, p):
+    def view2D(self, room, slice, p, view):
         fig = plt.figure()
 
-        l, w, h = room.getDimensions()
+        if view == 0:
+            l, w, h = room.getDimensions()
+        elif view == 1:
+            l, h, w = room.getDimensions()
+        else:
+            h, l, w = room.getDimensions()
+
         x = np.linspace(0, l, l*10)
         y = np.linspace(0, w, w*10)
         X, Y = np.meshgrid(x, y)
@@ -40,7 +46,13 @@ class Visualization:
         sensorValues = []
         for sensor in room.getSensors():
             sX, sY, sZ = sensor.getLocation()
-            temp = [sX, sY, sZ]
+            if view == 0:
+                temp = [sX, sY, sZ]
+            elif view == 1:
+                temp = [sX, sZ, sY]
+            else:
+                temp = [sY, sZ, sX]
+            print(temp)
             sensorLocations.append(temp)
             sensorValues.append(sensor.getValue())
 
@@ -53,7 +65,8 @@ class Visualization:
         
         plt.axes().set_aspect('equal', 'box')
         plt.contourf(X, Y, Z, 40, cmap='viridis')
-        plt.colorbar()     
+        plt.clim(0,1)
+        plt.colorbar() 
 
         return fig
 
