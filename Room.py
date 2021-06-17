@@ -54,3 +54,9 @@ class Room:
 
 	def getName(self):
 		return self.name
+	
+	def update(self, room):
+		self.name = room['name']
+		self.lenght = room['length']
+		self.width = room['width']
+		self.height = room['height']

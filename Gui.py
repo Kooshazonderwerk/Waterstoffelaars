@@ -37,7 +37,7 @@ class Gui(tk.Tk):
 			frame.grid(row=0, column=0, sticky="nsew")
 
 		self.show_frame(StartPage)
-		self.startThreads()
+		# self.startThreads()
 		
 	def show_frame(self, cont, post=None):
 		frame = self.frames[cont]
@@ -65,8 +65,8 @@ class Gui(tk.Tk):
 
 	def updateRooms(self):
 		startPage = self.frames[StartPage]
-		startPage.reload()
+		startPage.loadRooms()
 
 
-	def startThreads(self):
-		self.program.startThreads()
+	# def startThreads(self):
+	# 	self.program.startThreads()

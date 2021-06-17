@@ -32,26 +32,35 @@ class StartPage(tk.Frame):
         self.roomInfoText = {}
         self.sensorInfoTexts = {}
         self.obstacleInfoTexts = {}
+        self.loadedRooms = []
 
         self.roomTabs = ttk.Notebook(self)
         # self.loadRooms()
-        self.controller.program.socketconn.getAllRooms()
+        # self.controller.program.socketconn.getAllRooms()
 
     def reload(self):
-        self.roomTabs = ttk.Notebook(self)
-        self.loadRooms()
+        self.controller.program.socketconn.getAllRooms()
 
     def loadRooms(self):
-        # self.controller.program.addRoomsFromNetwork()
-        # print("test: " + str(roomsjson))
         rooms = self.controller.program.getRooms()
-        # print(roomsjson)
-        # print(rooms)
-        # print("test: " + str(roomsjson))
+        print(rooms)
         for roomId in rooms:
-            self.loadRoom(rooms[roomId])
+            self.loadRoom(rooms[roomId], roomId)
 
-    def loadRoom(self, room):
+    def loadRoom(self, room, roomId):
+        if roomId in self.loadedRooms:
+            self.updateRoom(room)
+        else: 
+            print(roomId)
+            self.loadedRooms.append(roomId)
+            self.addRoomToGui(room)
+            
+        
+    def updateRoom(self, room):
+        print('room already loaded')
+        print('feature not yet implemented')
+
+    def addRoomToGui(self, room):
         self.roomInfoText[room.id] = {
             "id": tk.StringVar(),
             "name": tk.StringVar(),
@@ -286,11 +295,11 @@ class StartPage(tk.Frame):
     def updateSensorValue(self, sensorId, sensorValue):
         self.sensorvalues[str(sensorId)].set(sensorValue)
     
-    def updateRoom(self, roomId, roomInfo):
-        # print(roomId)
-        self.roomInfoText[roomId]['id'].set(f"room {str(roomInfo['id'])}")
-        self.updateSensors(roomId) #when the rooms get updated the sensors goes as well.
-        self.updateObstacles(roomId)
+    # def updateRoom(self, roomId, roomInfo):
+    #     # print(roomId)
+    #     self.roomInfoText[roomId]['id'].set(f"room {str(roomInfo['id'])}")
+    #     self.updateSensors(roomId) #when the rooms get updated the sensors goes as well.
+    #     self.updateObstacles(roomId)
     
     def updateSensors(self, roomId):
         room = self.controller.program.getRoom(roomId)

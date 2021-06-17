@@ -10,7 +10,7 @@ class SocketClientHandler():
         #Start connect, print info and send message 
         self.program = program
         self.sio.connect('http://localhost:5001')
-        self.sio.on('getRooms', self.handleGetRooms)
+        self.sio.on('sendAllRooms', self.handleGetRooms)
         self.sio.on('updateSensorValue', self.handleUpdateSensorValue)
     #Default socketIO events
     #-------------------------------------------------------------------------#
@@ -36,7 +36,8 @@ class SocketClientHandler():
 
     def handleGetRooms(self, data):
         rooms = json.loads(data)
-        self.program.addRooms(rooms)
+        print('why')
+        self.program.updateRooms(rooms)
 
     def handleUpdateSensorValue(self, data):
         sensorValues = json.loads(data)
