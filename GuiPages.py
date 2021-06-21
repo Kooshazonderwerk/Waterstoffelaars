@@ -24,8 +24,8 @@ class StartPage(tk.Frame):
 
     currentView = np.array([], np.int)
     view = np.array([], np.int)
-    zLayer = np.array([], np.int)
-    pValue = np.array([], np.int)
+    zLayer = np.array([])
+    pValue = np.array([])
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -49,7 +49,7 @@ class StartPage(tk.Frame):
         rooms = self.controller.program.getRooms()
         
         for room in rooms:
-            print(room.id-1)
+            #print(room.id-1)
             self.currentView = np.append(self.currentView, 1)
             self.view = np.append(self.view, 0)
             self.zLayer = np.append(self.zLayer, 0)
@@ -190,8 +190,8 @@ class StartPage(tk.Frame):
             show2D()
 
         def changeView():
-            print("room: " + str(room.id-1))
-            print("view: " + str(self.currentView[room.id-1]))
+            #print("room: " + str(room.id-1))
+            #print("view: " + str(self.currentView[room.id-1]))
             if self.currentView[room.id-1] == 0:
                 self.currentView[room.id-1] = 1
                 frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
@@ -235,7 +235,7 @@ class StartPage(tk.Frame):
         btnEditSensor = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit",
                                    command=lambda: self.loadSensorEditPage(room, sensor))
 
-        print("Sensor id", sensor.id, "| Sensor value:", sensor.value)
+        #print("Sensor id", sensor.id, "| Sensor value:", sensor.value)
         self.sensorFrames[str(room.id)][str(sensor.id)].grid(row=position, column=0, sticky="nsew")
 
         lblSensorName.grid(row=0, column=0)
@@ -248,7 +248,7 @@ class StartPage(tk.Frame):
         lblObstacleName = ttk.Label(self.obstacleFrames[str(room.id)][str(obstacle.id)], text=obstacle.name)
         btnEditObstacle = ttk.Button(self.obstacleFrames[str(room.id)][str(obstacle.id)], text="Edit", command=lambda: self.loadObstacleEditPage(room, obstacle))
 
-        print("Obstacle id",obstacle.id,"| Obstacle value:",obstacle.value)
+        #print("Obstacle id",obstacle.id,"| Obstacle value:",obstacle.value)
         self.obstacleFrames[str(room.id)][str(obstacle.id)].grid(row=position, column=0, sticky="nsew")
 
         lblObstacleName.grid(row=0, column=0)
@@ -336,7 +336,7 @@ class EditRoomPage(tk.Frame):
         roomX = self.entEditRoomWidth.get()
         roomZ = self.entEditRoomLength.get()
         roomY = self.entEditRoomHeight.get()
-        print(roomName)
+        #print(roomName)
         # debugging^
         self.entEditRoomName.delete(0, tk.END)
         self.entEditRoomWidth.delete(0, tk.END)
@@ -520,7 +520,7 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorY.delete(0, tk.END)
         self.entEditSensorZ.delete(0, tk.END)
 
-        print(controller.getValue()[1].id)
+        #print(controller.getValue()[1].id)
         if (controller.getValue()[1].id != None):
             controller.program.editSensor(controller.getValue()[1].id, name, sensorX, sensorY, sensorZ)
         else:
@@ -618,7 +618,7 @@ class EditObstaclePage(tk.Frame):
         self.entEditObstacleY2.delete(0, tk.END)
         self.entEditObstacleZ2.delete(0, tk.END)
 
-        print(controller.getValue()[1].id)
+        #print(controller.getValue()[1].id)
         if(controller.getValue()[1].id != None):
             controller.program.editObstacle(controller.getValue()[1].id, name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
         else:

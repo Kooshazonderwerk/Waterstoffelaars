@@ -52,7 +52,7 @@ class Visualization:
                 temp = [sX, sZ, sY]
             else:
                 temp = [sY, sZ, sX]
-            print(temp)
+            #print(temp)
             sensorLocations.append(temp)
             sensorValues.append(sensor.getValue())
 
@@ -124,7 +124,7 @@ class Visualization:
 
         #wat is dit?
     def cuboid_data(self, o, size=(1,1,1)):
-        print(size)
+        #print(size)
         l, w, h = size
         x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  
             [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
