@@ -53,7 +53,7 @@ class StartPage(tk.Frame):
             self.currentView = np.append(self.currentView, 1)
             self.view = np.append(self.view, 0)
             self.zLayer = np.append(self.zLayer, 0)
-            self.pValue = np.append(self.pValue, 2)
+            self.pValue = np.append(self.pValue, 5)
             self.loadRoom(room)
         
 
@@ -179,7 +179,7 @@ class StartPage(tk.Frame):
         zEntry.insert(0, self.zLayer[room.id-1])
 
         #variable for inverse distance weighting
-        lblEditP = ttk.Label(frmViewChange, text="P:")
+        lblEditP = ttk.Label(frmViewChange, text="p:")
         lblEditP.pack(fill=tk.Y, side=tk.LEFT)
         pEntry = ttk.Entry(frmViewChange, width=3)
         pEntry.pack(fill=tk.Y, side=tk.LEFT)

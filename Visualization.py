@@ -5,7 +5,7 @@ from matplotlib.backends.backend_tkagg import (
 from matplotlib.figure import Figure
 
 import matplotlib.pyplot as plt
-from numpy import equal, linalg
+from numpy import equal
 plt.style.use('seaborn-white')
 
 class Visualization:
@@ -30,6 +30,7 @@ class Visualization:
 
     def view2D(self, room, slice, p, view):
         fig = plt.figure()
+        res = 3 #resolution, steps per dimension value
 
         if view == 0:
             l, w, h = room.getDimensions()
@@ -38,8 +39,8 @@ class Visualization:
         else:
             h, l, w = room.getDimensions()
 
-        x = np.linspace(0, l, l*10)
-        y = np.linspace(0, w, w*10)
+        x = np.linspace(0, l, l*res)
+        y = np.linspace(0, w, w*res)
         X, Y = np.meshgrid(x, y)
         
         sensorLocations = []
@@ -64,7 +65,7 @@ class Visualization:
                 arr.append(self.calcPointValue(sensorLocations, sensorValues, xC, yC, slice, p))
         
         plt.axes().set_aspect('equal', 'box')
-        plt.contourf(X, Y, Z, 40, cmap='viridis')
+        plt.contourf(X, Y, Z, 50, cmap='viridis')
         plt.clim(0,1)
         plt.colorbar()
         if view == 0:
