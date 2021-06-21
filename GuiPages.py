@@ -151,10 +151,13 @@ class StartPage(tk.Frame):
 
         #Change view button
         frmViewChange = ttk.Frame(self.roomFrames[str(room.id)])
-        btnChangeView = ttk.Button(frmViewChange, text="2D <-> 3D",
+        btnChangeView = ttk.Button(frmViewChange, text="3D",
                                     command=lambda: changeView())
         btnChangeView.pack(fill=tk.Y, side=tk.LEFT)
         frmViewChange.grid(row=1, column=3, padx=5, pady=5)
+
+        lbl2d = ttk.Label(frmViewChange, text="2D:")
+        lbl2d.pack(fill=tk.Y, side=tk.LEFT)
 
         btnTop = ttk.Button(frmViewChange, text="Top",
                                    command=lambda: view(0))
@@ -192,7 +195,7 @@ class StartPage(tk.Frame):
         def changeView():
             #print("room: " + str(room.id-1))
             #print("view: " + str(self.currentView[room.id-1]))
-            if self.currentView[room.id-1] == 0:
+            #if self.currentView[room.id-1] == 0:
                 self.currentView[room.id-1] = 1
                 frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
                 canvas = FigureCanvasTkAgg(visual.view3D(room), master=frm3Dview)
@@ -203,9 +206,9 @@ class StartPage(tk.Frame):
                 canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
                 frm3Dview.grid(row=2, column=3, padx=5, pady=5)
 
-            else:
-                self.currentView[room.id-1] = 0
-                show2D()
+            #else:
+            #   self.currentView[room.id-1] = 0
+            #   show2D()
                 
         def show2D():
             self.zLayer[room.id-1] = zEntry.get()
