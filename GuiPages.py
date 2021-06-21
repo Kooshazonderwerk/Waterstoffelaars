@@ -171,19 +171,19 @@ class StartPage(tk.Frame):
                                     command=lambda: view(2))
         btnRight.pack(fill=tk.Y, side=tk.LEFT)
 
-        #Layer of unseen dimension in 2d, i.e. length and width are seen, z is wich layer in depth is to be shown
-        lblEditLayer = ttk.Label(frmViewChange, text="Layer:")
-        lblEditLayer.pack(fill=tk.Y, side=tk.LEFT)
-        zEntry = ttk.Entry(frmViewChange, width=3)
-        zEntry.pack(fill=tk.Y, side=tk.LEFT)
-        zEntry.insert(0, self.zLayer[room.id-1])
-
         #variable for inverse distance weighting
         lblEditP = ttk.Label(frmViewChange, text="p:")
         lblEditP.pack(fill=tk.Y, side=tk.LEFT)
         pEntry = ttk.Entry(frmViewChange, width=3)
         pEntry.pack(fill=tk.Y, side=tk.LEFT)
         pEntry.insert(0, self.pValue[room.id-1])
+        
+        #Layer of unseen dimension in 2d, i.e. length and width are seen, z is wich layer in depth is to be shown
+        lblEditLayer = ttk.Label(frmViewChange, text="Layer:")
+        lblEditLayer.pack(fill=tk.Y, side=tk.LEFT)
+        zEntry = ttk.Entry(frmViewChange, width=3)
+        zEntry.pack(fill=tk.Y, side=tk.LEFT)
+        zEntry.insert(0, self.zLayer[room.id-1])
 
         visual = Visualization()
               
