@@ -24,6 +24,8 @@ class StartPage(tk.Frame):
 
     currentView = np.array([], np.int)
     view = np.array([], np.int)
+    zLayer = np.array([], np.int)
+    pValue = np.array([], np.int)
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -50,6 +52,8 @@ class StartPage(tk.Frame):
             print(room.id-1)
             self.currentView = np.append(self.currentView, 1)
             self.view = np.append(self.view, 0)
+            self.zLayer = np.append(self.zLayer, 0)
+            self.pValue = np.append(self.pValue, 2)
             self.loadRoom(room)
         
 
@@ -164,15 +168,24 @@ class StartPage(tk.Frame):
                                     command=lambda: view(2))
         btnRight.pack(fill=tk.Y, side=tk.LEFT)
 
-        #for 2d, temp
-        z = 5
+        #Layer of unseen dimension in 2d, i.e. length and width are seen, z is wich layer in depth is to be shown
+        lblEditLayer = ttk.Label(frmViewChange, text="Layer:")
+        lblEditLayer.pack(fill=tk.Y, side=tk.LEFT)
+        zEntry = ttk.Entry(frmViewChange, width=3)
+        zEntry.pack(fill=tk.Y, side=tk.LEFT)
+        zEntry.insert(0, self.zLayer[room.id-1])
 
         #variable for inverse distance weighting
-        p = 16 
+        lblEditP = ttk.Label(frmViewChange, text="P:")
+        lblEditP.pack(fill=tk.Y, side=tk.LEFT)
+        pEntry = ttk.Entry(frmViewChange, width=3)
+        pEntry.pack(fill=tk.Y, side=tk.LEFT)
+        pEntry.insert(0, self.pValue[room.id-1])
 
         visual = Visualization()
               
         def view(side):
+            self.currentView[room.id-1] = 0
             self.view[room.id-1] = side
             show2D()
 
@@ -195,15 +208,17 @@ class StartPage(tk.Frame):
                 show2D()
                 
         def show2D():
-                frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
+            self.zLayer[room.id-1] = zEntry.get()
+            self.pValue[room.id-1] = pEntry.get()
+            frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
                 
-                canvas = FigureCanvasTkAgg(visual.view2D(room, z, p, self.view[room.id-1]), master=frm2Dview)
-                canvas.draw()
+            canvas = FigureCanvasTkAgg(visual.view2D(room, self.zLayer[room.id-1], self.pValue[room.id-1], self.view[room.id-1]), master=frm2Dview)
+            canvas.draw()
 
-                toolbar = NavigationToolbar2Tk(canvas, frm2Dview)
-                toolbar.update()
-                canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-                frm2Dview.grid(row=2, column=3, padx=5, pady=5)
+            toolbar = NavigationToolbar2Tk(canvas, frm2Dview)
+            toolbar.update()
+            canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+            frm2Dview.grid(row=2, column=3, padx=5, pady=5)
 
             
         changeView()
