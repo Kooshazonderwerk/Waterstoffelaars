@@ -156,7 +156,9 @@ class StartPage(tk.Frame):
         btnChangeView.pack(fill=tk.Y, side=tk.LEFT)
         frmViewChange.grid(row=1, column=3, padx=5, pady=5)
 
-        lbl2d = ttk.Label(frmViewChange, text="2D:")
+        lblempty = ttk.Label(frmViewChange, text="            ")
+        lblempty.pack(fill=tk.Y, side=tk.LEFT)
+        lbl2d = ttk.Label(frmViewChange, text="2D controls:")
         lbl2d.pack(fill=tk.Y, side=tk.LEFT)
 
         btnTop = ttk.Button(frmViewChange, text="Top",
