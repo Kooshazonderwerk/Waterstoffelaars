@@ -67,7 +67,7 @@ class Visualization:
         plt.axes().set_aspect('equal', 'box')
         plt.contourf(X, Y, Z, 50, cmap='viridis')
         plt.clim(0,1)
-        plt.colorbar()
+        plt.colorbar(ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
         if view == 0:
             plt.title("IDW Hydrogen concentration, p: " + str(p) + ", at height: " + str(slice))
             plt.xlabel("Length")
