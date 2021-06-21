@@ -66,7 +66,19 @@ class Visualization:
         plt.axes().set_aspect('equal', 'box')
         plt.contourf(X, Y, Z, 40, cmap='viridis')
         plt.clim(0,1)
-        plt.colorbar() 
+        plt.colorbar()
+        if view == 0:
+            plt.title("IDW Hydrogen concentration, p: " + str(p) + ", at height: " + str(slice))
+            plt.xlabel("Length")
+            plt.ylabel("Width")
+        elif view == 1:
+            plt.title("IDW Hydrogen concentration, p: " + str(p) + ", at width: " + str(slice))
+            plt.xlabel("Length")
+            plt.ylabel("Height")
+        else:
+            plt.title("IDW Hydrogen concentration, p: " + str(p) + ", at length: " + str(slice))
+            plt.xlabel("Width")
+            plt.ylabel("Height") 
 
         return fig
 
