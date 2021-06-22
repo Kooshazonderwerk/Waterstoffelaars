@@ -59,9 +59,18 @@ class Gui(tk.Tk):
 		for sensor in sensorValues:
 			startPage.updateSensorValue(sensor['id'], sensor['value'])
 	
-	def updateRoomData(self, roomId, roomInfo):
+	def updateSensorData(self, sensor, room):
 		startPage = self.frames[StartPage]
-		startPage.updateRoom(roomId, roomInfo)
+		print(sensor.name)
+		startPage.loadSensor(sensor, room)
+	
+	def updateRoomData(self, room):
+		startPage = self.frames[StartPage]
+		startPage.loadRoom(room, room.id)
+
+	def updateObstacleData(self, obstacle, room):
+		startPage = self.frames[StartPage]
+		startPage.loadObstacle(obstacle, room)
 
 	def updateRooms(self):
 		startPage = self.frames[StartPage]

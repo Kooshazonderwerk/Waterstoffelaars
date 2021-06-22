@@ -38,3 +38,13 @@ class Obstacle:
 	'''returns a string with the name stored in the Obstacle object'''
 	def getName(self):
 		return self.name
+	
+	'''takes a dict with obstacle data and updates the obstacle'''
+	def update(self, obstacle):
+		self.name = obstacle['name']
+		self.x1 = obstacle['x1']
+		self.y1 = obstacle['y1']
+		self.z1 = obstacle['z1']
+		self.x2 = obstacle['x2']
+		self.y2 = obstacle['y2']
+		self.z2 = obstacle['z2']

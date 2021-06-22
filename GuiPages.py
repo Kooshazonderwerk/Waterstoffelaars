@@ -11,6 +11,9 @@ from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
 import json
+import threading
+
+
 
 
 #  future plans
@@ -33,19 +36,28 @@ class StartPage(tk.Frame):
         self.sensorInfoTexts = {}
         self.obstacleInfoTexts = {}
         self.loadedRooms = []
+        self.loadedSensors = []
+        self.loadedObstacles = []
+        self.scrollable_frame_sensors = {}
+        self.scrollable_frame_obstacle = {}
 
         self.roomTabs = ttk.Notebook(self)
+        self.roomTabs.grid(row=1, column=0, sticky="nsew")
+
         # self.loadRooms()
         # self.controller.program.socketconn.getAllRooms()
-
+    
     def reload(self):
-        self.controller.program.socketconn.getAllRooms()
+        self.controller.program.socketconn.ready()
 
     def loadRooms(self):
         rooms = self.controller.program.getRooms()
         print(rooms)
         for roomId in rooms:
             self.loadRoom(rooms[roomId], roomId)
+
+    def getRoom(self, roomId):
+        self.controller.program.getRoom()
 
     def loadRoom(self, room, roomId):
         if roomId in self.loadedRooms:
@@ -54,6 +66,17 @@ class StartPage(tk.Frame):
             print(roomId)
             self.loadedRooms.append(roomId)
             self.addRoomToGui(room)
+    
+    def addToRoomTabs(self, roomId, child):
+        position = roomId
+        for key in self.roomFrames.keys():
+            if int(key) > position:
+                position = int(key)
+        if(position == roomId):
+            self.roomTabs.add(child, text=f"room {roomId}")
+        else:
+            self.roomTabs.insert(where=self.roomFrames[str(position)],child=child, text=f"room {roomId}")
+        self.roomFrames[str(roomId)] = child
             
         
     def updateRoom(self, room):
@@ -71,10 +94,9 @@ class StartPage(tk.Frame):
         self.roomInfoText[room.id]['id'].set(f"room {str(room.id)}")
         self.sensorFrames[str(room.id)] = {}
         self.obstacleFrames[str(room.id)] = {}
+
         # future add room check
-        self.roomFrames[str(room.id)] = ttk.Frame(self.roomTabs)
-        self.roomTabs.add(self.roomFrames[str(room.id)], text=f"room {room.id}")
-        self.roomTabs.grid(row=1, column=0, sticky="nsew")
+        self.addToRoomTabs(room.id, ttk.Frame(self.roomTabs))
 
         # legend Frame
         frmLegend = ttk.Frame(self.roomFrames[str(room.id)])
@@ -83,6 +105,7 @@ class StartPage(tk.Frame):
         lblLegend.grid(row=0, column=0, padx=5, pady=5)
 
         frmLegend.grid(row=0, column=0, padx=5, pady=5)
+        
         # Room info frame
         frmRoomInfo = ttk.Frame(self.roomFrames[str(room.id)])
         lblRoomInfoName = ttk.Label(frmRoomInfo, textvariable=self.roomInfoText[room.id]['id'])
@@ -123,15 +146,13 @@ class StartPage(tk.Frame):
         frmObstacleList = ttk.Frame(self.roomFrames[str(room.id)])
         canvasObstacleList = tk.Canvas(frmObstacleList)
         scrollbarObstacleList = ttk.Scrollbar(frmObstacleList, orient="vertical", command=canvasObstacleList.yview)
-        self.scrollable_frame = ttk.Frame(canvasObstacleList)
-        canvasObstacleList.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.scrollable_frame_obstacle[room.id] = ttk.Frame(canvasObstacleList)
+        canvasObstacleList.create_window((0, 0), window=self.scrollable_frame_obstacle[room.id], anchor="nw")
         canvasObstacleList.configure(yscrollcommand=scrollbarObstacleList.set)
         
         canvasObstacleList.bind("<Configure>", 
                               lambda e: canvasObstacleList.configure(scrollregion = canvasObstacleList.bbox("all") ))
 
-        for index, obstacle in enumerate(room.getObstacles()):
-            self.loadObstacle(obstacle, room, index)
 
         canvasObstacleList.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbarObstacleList.pack(side=tk.RIGHT, fill="y")
@@ -142,15 +163,15 @@ class StartPage(tk.Frame):
         frmSensorList = ttk.Frame(self.roomFrames[str(room.id)])
         canvasSensorList = tk.Canvas(frmSensorList)
         scrollbarSensorList = ttk.Scrollbar(frmSensorList, orient="vertical", command=canvasSensorList.yview)
-        self.scrollable_frame = ttk.Frame(canvasSensorList)
-        canvasSensorList.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.scrollable_frame_sensors[room.id] = ttk.Frame(canvasSensorList)
+        canvasSensorList.create_window((0, 0), window=self.scrollable_frame_sensors[room.id], anchor="nw")
         canvasSensorList.configure(yscrollcommand=scrollbarSensorList.set)
 
         canvasSensorList.bind("<Configure>",
                               lambda e: canvasSensorList.configure(scrollregion=canvasSensorList.bbox("all")))
 
-        for index, sensor in enumerate(room.getSensors()):
-            self.loadSensor(sensor, room, index)
+        # for index, sensor in enumerate(room.getSensors()):
+        #     self.loadSensor(sensor, room, index)
 
         canvasSensorList.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbarSensorList.pack(side=tk.RIGHT, fill="y")
@@ -159,79 +180,88 @@ class StartPage(tk.Frame):
 
         # 3d vieuw
         frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
-        def cuboid_data(o, size=(1,1,1)):
-            # print(size)
-            l, w, h = size
-            x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  
-                [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
-                [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
-                [o[0], o[0] + l, o[0] + l, o[0], o[0]]]  
-            y = [[o[1], o[1], o[1] + w, o[1] + w, o[1]],  
-                [o[1], o[1], o[1] + w, o[1] + w, o[1]],  
-                [o[1], o[1], o[1], o[1], o[1]],          
-                [o[1] + w, o[1] + w, o[1] + w, o[1] + w, o[1] + w]]   
-            z = [[o[2], o[2], o[2], o[2], o[2]],                       
-                [o[2] + h, o[2] + h, o[2] + h, o[2] + h, o[2] + h],   
-                [o[2], o[2], o[2] + h, o[2] + h, o[2]],               
-                [o[2], o[2], o[2] + h, o[2] + h, o[2]]]               
-            return np.array(x), np.array(y), np.array(z)
+        # def cuboid_data(o, size=(1,1,1)):
+        #     # print(size)
+        #     l, w, h = size
+        #     x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+        #         [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+        #         [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+        #         [o[0], o[0] + l, o[0] + l, o[0], o[0]]]  
+        #     y = [[o[1], o[1], o[1] + w, o[1] + w, o[1]],  
+        #         [o[1], o[1], o[1] + w, o[1] + w, o[1]],  
+        #         [o[1], o[1], o[1], o[1], o[1]],          
+        #         [o[1] + w, o[1] + w, o[1] + w, o[1] + w, o[1] + w]]   
+        #     z = [[o[2], o[2], o[2], o[2], o[2]],                       
+        #         [o[2] + h, o[2] + h, o[2] + h, o[2] + h, o[2] + h],   
+        #         [o[2], o[2], o[2] + h, o[2] + h, o[2]],               
+        #         [o[2], o[2], o[2] + h, o[2] + h, o[2]]]               
+        #     return np.array(x), np.array(y), np.array(z)
 
-        def plotCubeAt(pos=(0,0,0), size=(1,1,1), ax=None,**kwargs):
-            # Plotting a cube element at position pos
-            if ax !=None:
-                X, Y, Z = cuboid_data( pos, size )
-                ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
+        # def plotCubeAt(pos=(0,0,0), size=(1,1,1), ax=None,**kwargs):
+        #     # Plotting a cube element at position pos
+        #     if ax !=None:
+        #         X, Y, Z = cuboid_data( pos, size )
+        #         ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
 
 
-        fig = Figure(facecolor='xkcd:brown', dpi=100)
+        # fig = Figure(facecolor='xkcd:brown', dpi=100)
 
-        canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
-        canvas.draw()
+        # canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
+        # canvas.draw()
 
-        ax = fig.add_subplot(111, projection='3d')
-        fig.tight_layout()
-        t1 = room.getDimensions()
-        x1, y1, z1 = t1
+        # ax = fig.add_subplot(111, projection='3d')
+        # fig.tight_layout()
+        # t1 = room.getDimensions()
+        # x1, y1, z1 = t1
 
-        ax.grid(False)
-        ax.set_facecolor('xkcd:brown')
-        ax.set_xlim([0, x1])
-        ax.set_ylim([0, y1])
-        ax.set_zlim([0, z1])
-        ax.set_box_aspect(aspect=(x1, y1, z1))
+        # ax.grid(False)
+        # ax.set_facecolor('xkcd:brown')
+        # ax.set_xlim([0, x1])
+        # ax.set_ylim([0, y1])
+        # ax.set_zlim([0, z1])
+        # ax.set_box_aspect(aspect=(x1, y1, z1))
 
-        list = room.getSensors()
-        listObstacles = room.getObstacles()
+        # list = room.getSensors()
+        # listObstacles = room.getObstacles()
 
-        for i in list:
-            t2 = i.getLocation()
-            x2, y2, z2 = t2
-            ms = 20  # markersize
-            ax.plot(x2, y2, z2, 'or')
-            ax.plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
-            for x in range(5):
-                ax.plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-                ax.plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
-                ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
-                ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-                ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
+        # for i in list:
+        #     t2 = i.getLocation()
+        #     x2, y2, z2 = t2
+        #     ms = 20  # markersize
+        #     ax.plot(x2, y2, z2, 'or')
+        #     ax.plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
+        #     for x in range(5):
+        #         ax.plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+        #         ax.plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
+        #         ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
+        #         ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+        #         ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
         
-        for i in listObstacles:
-            t3 = i.getLocation()
-            x3, y3, z3, x4, y4, z4 = t3
-            positions = (x3,y3,z3)
-            sizes = (x4,y4,z4)
-            plotCubeAt(pos=positions, size=sizes, ax=ax)
+        # for i in listObstacles:
+        #     t3 = i.getLocation()
+        #     x3, y3, z3, x4, y4, z4 = t3
+        #     positions = (x3,y3,z3)
+        #     sizes = (x4,y4,z4)
+        #     plotCubeAt(pos=positions, size=sizes, ax=ax)
 
-        toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
-        toolbar.update()
+        # toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
+        # toolbar.update()
 
-        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        # canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
         frm3Dview.grid(row=2, column=3, padx=5, pady=5)
+    
+    def loadSensor(self, sensor, room):
+        if room.id in self.loadedRooms:
+            print("room is loaded")
+            if sensor.id in self.loadedSensors:
+                print("obstacle is loaded")
+            else:
+                self.addSensorToGui(sensor, room)
 
-    def loadSensor(self, sensor, room, position):
-        self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10,
+    def addSensorToGui(self, sensor, room):
+        print(room.id)
+        self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame_sensors[room.id], width=100, height=10,
                                                                     relief=tk.GROOVE, borderwidth=5)
         text = tk.StringVar()
         sensorInfo = {
@@ -247,7 +277,7 @@ class StartPage(tk.Frame):
                                    command=lambda: self.loadSensorEditPage(room, sensor))
 
         # print("Sensor id", sensor.id, "| Sensor value:", sensor.value)
-        self.sensorFrames[str(room.id)][str(sensor.id)].grid(row=position, column=0, sticky="nsew")
+        self.sensorFrames[str(room.id)][str(sensor.id)].grid(row=sensor.id, column=0, sticky="nsew")
 
         lblSensorName.grid(row=0, column=0)
         lblSensorValue.grid(row=0, column=1)
@@ -255,18 +285,25 @@ class StartPage(tk.Frame):
         self.sensorvalues[str(sensor.id)] = text
         self.sensorInfoTexts[sensor.id] = sensorInfo
 
-    def loadObstacle(self, obstacle, room, position):
+    def loadObstacle(self, obstacle, room):
+        if room.id in self.loadedRooms:
+            if obstacle.id in self.loadedObstacles:
+                print("sensor is loaded")
+            else:
+                self.addObstacleToGui(obstacle, room)
+    
+    def addObstacleToGui(self, obstacle, room):
         obstacleInfo = {
             'name': tk.StringVar() 
         }
         obstacleInfo['name'].set(obstacle.name)
-        self.obstacleFrames[str(room.id)][str(obstacle.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10, relief=tk.GROOVE, borderwidth=5)
+        self.obstacleFrames[str(room.id)][str(obstacle.id)] = ttk.Frame(self.scrollable_frame_obstacle[room.id], width=100, height=10, relief=tk.GROOVE, borderwidth=5)
 
         lblObstacleName = ttk.Label(self.obstacleFrames[str(room.id)][str(obstacle.id)], textvariable=obstacleInfo['name'])
         btnEditObstacle = ttk.Button(self.obstacleFrames[str(room.id)][str(obstacle.id)], text="Edit", command=lambda: self.loadObstacleEditPage(room, obstacle))
 
         # print("Obstacle id",obstacle.id,"| Obstacle value:",obstacle.value)
-        self.obstacleFrames[str(room.id)][str(obstacle.id)].grid(row=position, column=0, sticky="nsew")
+        self.obstacleFrames[str(room.id)][str(obstacle.id)].grid(row=obstacle.id, column=0, sticky="nsew")
 
         lblObstacleName.grid(row=0, column=0)
         btnEditObstacle.grid(row=0, column=2)

@@ -38,3 +38,10 @@ class Sensor:
 	'''returns a string with the name stored in the Sensor object'''
 	def getName(self):
 		return self.name
+
+	'''takes a dict with sensor data and updates the sensor'''
+	def update(self, sensor):
+		self.name = sensor['name']
+		self.x = sensor['x']
+		self.y = sensor['y']
+		self.z = sensor['z']

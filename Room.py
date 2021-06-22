@@ -4,35 +4,57 @@ from Obstacle import Obstacle
 class Room:
 
 	def __init__(self, id, name, lenght=0, width=0, height=0, sensors=[], obstacles=[]):
-		self.obstacleList = []
-		self.sensorList = []
+		self.obstacleList = {}
+		self.sensorList = {}
 		self.id = id
 		self.name = name
 		self.lenght = lenght
 		self.width = width
 		self.height = height
-		for sensor in sensors:
-			self.addSensor(Sensor(sensor['id'], sensor['name'], sensor['x'], sensor['y'], sensor['z']))
-		for obstacle in obstacles:
-			self.addObstacle(Obstacle(obstacle['id'], obstacle['name'], obstacle['x1'], obstacle['y1'], obstacle['z1'], obstacle['x2'], obstacle['y2'], obstacle['z2']))
 
-	'''Takes a object of type Sensor and adds it to the list of sensors'''
+	'''Takes a object of type Sensor and adds it to the dict of sensors'''
 	def addSensor(self, sensor):
 		if(isinstance(sensor, Sensor)):
-			self.sensorList.append(sensor)
+			self.sensorList[sensor.id] = sensor
 		else:
-			print(type(sensor)+' object is not of Type Sensor') #ERRORHANDELING
+			print(str(type(sensor))+' object is not of Type Sensor') #ERRORHANDELING
 
 	'''returns a list with all sensors currently holded by the Room object'''
 	def getSensors(self):
 		return self.sensorList
+	
+	'''Takes a object of type Sensor and updates it in the dict of sensors'''
+	def updateSensor(self, sensor):
+		if(isinstance(sensor, Sensor)):
+			self.sensorList[sensor.id].update(sensor)
+		else:
+			print(str(type(sensor))+' object is not of Type Sensor') #ERRORHANDELING
 
-	'''Takes a object of type Obstacle and adds it to the list of obstacles'''
+	'''takes a sensor id and if it exist returns the corresponding sensor else it returns none'''
+	def getSensor(self, sensorId):
+		if sensorId in self.sensorList:
+			return self.sensorList[sensorId]
+		return None
+
+	'''Takes a object of type Obstacle and adds it to the dict of obstacles'''
 	def addObstacle(self, obstacle):
 		if(isinstance(obstacle, Obstacle)):
-			self.obstacleList.append(obstacle)
+			self.obstacleList[obstacle.id] = obstacle
 		else:
-			print(type(obstacle)+' object is not of Type Obstacle') #ERRORHANDELING
+			print(str(type(obstacle))+' object is not of Type Obstacle') #ERRORHANDELING
+
+	'''Takes a object of type Obstacle and updates it in the dict of obstacles'''
+	def updateObstacle(self, obstacle):
+		if(isinstance(obstacle, Obstacle)):
+			self.obstacleList[obstacle.id].update(obstacle)
+		else:
+			print(str(type(obstacle))+' object is not of Type Obstacle') #ERRORHANDELING
+	
+	'''takes a sensor id and if it exist returns the corresponding sensor else it returns none'''
+	def getObstacle(self, obstacleId):
+		if obstacleId in self.obstacleList:
+			return self.obstacleList[obstacleId]
+		return None
 
 	'''returns a list with all obstacles currently holded by the Room object'''
 	def getObstacles(self):
@@ -51,6 +73,7 @@ class Room:
 	'''returns a string with the id stored in the Room object'''
 	def getId(self):
 		return self.id
+	
 
 	def getName(self):
 		return self.name

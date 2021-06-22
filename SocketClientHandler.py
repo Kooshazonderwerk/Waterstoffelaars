@@ -12,6 +12,9 @@ class SocketClientHandler():
         self.sio.connect('http://localhost:5001')
         self.sio.on('sendAllRooms', self.handleGetRooms)
         self.sio.on('updateSensorValue', self.handleUpdateSensorValue)
+        self.sio.on('sendARoom', self.roomHandler)
+        self.sio.on('sendASensor', self.sensorHandler)
+        self.sio.on('sendAObstacle', self.obstacleHandler)
     #Default socketIO events
     #-------------------------------------------------------------------------#
     @sio.event
@@ -36,13 +39,23 @@ class SocketClientHandler():
 
     def handleGetRooms(self, data):
         rooms = json.loads(data)
-        print('why')
         self.program.updateRooms(rooms)
 
     def handleUpdateSensorValue(self, data):
         sensorValues = json.loads(data)
         self.program.updateSensorValue(1, sensorValues)
+    
+    def roomHandler(self, data):
+        room = json.loads(data)
+        self.program.handleRoom(room)
 
+    def sensorHandler(self, data):
+        sensor = json.loads(data)
+        self.program.handleSensor(sensor)
+
+    def obstacleHandler(self, data):
+        obstacle = json.loads(data)
+        self.program.handleObstacle(obstacle)
     #-------------------------------------------------------------------------#
 
     @sio.event
@@ -60,6 +73,10 @@ class SocketClientHandler():
     @sio.event
     def getAllRooms(self):
         self.sio.emit('getAllRooms')
+
+    @sio.event
+    def ready(self):
+        self.sio.emit('ready')
 
 # socketconn = SocketClientHandler()
 # print('my sid is', socketconn.sio.sid)
