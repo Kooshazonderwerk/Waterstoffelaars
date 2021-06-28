@@ -44,6 +44,7 @@ class StartPage(tk.Frame):
 
         self.roomTabs = ttk.Notebook(self)
         self.roomTabs.grid(row=1, column=0, sticky="nsew")
+        self.controller.program.socketconn.ready()
 
     
     def reload(self):
@@ -284,7 +285,7 @@ class StartPage(tk.Frame):
                 self.loadedSensors.append(sensor.id)
     
     def updateSensor(self, sensor, room):
-        self.sensorInfoTexts[sensor.id]['name']
+        self.sensorInfoTexts[sensor.id]['name'].set(sensor.name)
         self.btnEditSensor[sensor.id].configure(command=lambda: self.loadSensorEditPage(room, sensor))
         # t2 = sensor.getLocation()
         t2 = (16,16,16)
@@ -693,7 +694,7 @@ class EditSensorPage(tk.Frame):
         if (controller.getValue()[1].id != None):
             controller.program.editSensor(controller.getValue()[1].id, name, sensorX, sensorY, sensorZ)
         else:
-            controller.program.addSensor(controller.getValue()[0], name, sensorX, sensorY, sensorZ)
+            controller.program.createSensor(controller.getValue()[0], name, sensorX, sensorY, sensorZ)
         controller.show_frame(StartPage)
 
     def discardAndExit(self, controller):
@@ -791,7 +792,7 @@ class EditObstaclePage(tk.Frame):
         if(controller.getValue()[1].id != None):
             controller.program.editObstacle(controller.getValue()[1].id, name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
         else:
-            controller.program.addObstacle(controller.getValue()[0], name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
+            controller.program.createObstacle(controller.getValue()[0], name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
         controller.show_frame(StartPage)
 
         

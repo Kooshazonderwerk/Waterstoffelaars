@@ -1,8 +1,6 @@
 from Room import Room
 from Sensor import Sensor
 from Obstacle import Obstacle
-from Network import Network
-from SocketClient import SocketClient
 from SocketClientHandler import *
 import threading
 
@@ -10,15 +8,10 @@ class Program:
 	def __init__(self, gui, url):
 		self.gui = gui
 		self.rooms = {}
-		self.network = Network(url)
 		self.roomCount = 0
 		self.sem = threading.Semaphore()
-		# self.webSockets = []
-		# self.addRoomsFromNetwork()
 		self.socketconn = SocketClientHandler(self)
 		print('my sid is', self.socketconn.sio.sid)
-		# for key in self.rooms:
-		# 	self.webSockets.append(SocketClient(url, self, self.rooms[key], self.socketconn))
 
 
 	# Rooms
@@ -49,10 +42,10 @@ class Program:
 		self.gui.updateRooms()
 
 	def createRoom(self, name, width, height, length):
-		self.network.createRoom(name, width, height, length)
+		self.socketconn.createRoom(name, width, height, length)
 	
 	def editRoom(self, id, name, width, height, length):
-		self.network.editRoom(id, name, width, height, length)
+		self.socketconn.editRoom(id, name, width, height, length)
 
 	#Sensors
 
@@ -92,12 +85,17 @@ class Program:
 	def updateObstacle(self, obstacle, roomId):
 		self.rooms[roomId].updateObstacle(obstacle)
 
+	def createSensor(self, roomId, name, x, y, z):
+		self.socketconn.createSensor(roomId, name, x, y, z)
 
 	def editSensor(self, id, name, x, y, z):
-		self.network.editSensor(id, name, x, y, z)
+		self.socketconn.editSensor(id, name, x, y, z)
+
+	def createObstacle(self, roomId, name, x1, y1, z1, x2, y2, z2):
+		self.socketconn.createObstacle(roomId, name, x1, y1, z1, x2, y2, z2)
 
 	def editObstacle(self, id, name, x1, y1, z1, x2, y2, z2):
-		self.network.editObstacle(id, name, x1, y1, z1, x2, y2, z2)
+		self.socketconn.editObstacle(id, name, x1, y1, z1, x2, y2, z2)
 
 
 	def updateSensorValues(self, sensorValues):

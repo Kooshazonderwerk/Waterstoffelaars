@@ -43,7 +43,8 @@ class Gui(tk.Tk):
 		frame = self.frames[cont]
 		frame.tkraise()
 		if cont == StartPage:
-			frame.reload()
+			# frame.reload()
+			pass
 		if post is not None:
 			frame.post(post)
 		return frame
