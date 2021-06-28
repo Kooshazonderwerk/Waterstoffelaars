@@ -258,7 +258,6 @@ class StartPage(tk.Frame):
             frm3Dview.grid(row=2, column=3, padx=5, pady=5)
                 
         def show2D(side):
-            print(room)
             self.zLayer[room.id-1] = zEntry.get()
             self.pValue[room.id-1] = pEntry.get()
             frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
@@ -393,8 +392,8 @@ class StartPage(tk.Frame):
         self.sensorvalues[str(sensorId)].set(sensorValue)
 
     def updateSensorValues(self, sensorValues):
-        for key in sensorValues.keys():
-            self.updateSensorValue(key, sensorValues[key])
+        for sensorId, sensorValue in sensorValues.items():
+            self.updateSensorValue(sensorId, sensorValue['value'])
     
     # def updateRoom(self, roomId, roomInfo):
     #     # print(roomId)

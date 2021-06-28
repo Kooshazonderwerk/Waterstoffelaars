@@ -101,6 +101,11 @@ class Program:
 
 
 	def updateSensorValues(self, sensorValues):
+		for sensorId, sensorValue in sensorValues.items():
+			room = self.getRoom(sensorValue['room_id'])
+			sensor = room.getSensor(int(sensorId))
+			sensor.setValue(sensorValue['value'])
+
 		self.gui.updateSensorValues(sensorValues)
 	
 	# def startThreads(self):
