@@ -15,6 +15,7 @@ class SocketClientHandler():
         self.sio.on('sendARoom', self.roomHandler)
         self.sio.on('sendASensor', self.sensorHandler)
         self.sio.on('sendAObstacle', self.obstacleHandler)
+        self.sio.on('sendSensorValue', self.sensorValueHandler)
     #Default socketIO events
     #-------------------------------------------------------------------------#
     @sio.event
@@ -56,6 +57,10 @@ class SocketClientHandler():
     def obstacleHandler(self, data):
         obstacle = json.loads(data)
         self.program.handleObstacle(obstacle)
+    
+    def sensorValueHandler(self, data):
+        sensorValues = json.loads(data)
+        self.program.updateSensorValues(sensorValues)
     #-------------------------------------------------------------------------#
 
     @sio.event

@@ -54,10 +54,9 @@ class Gui(tk.Tk):
 	def getValue(self):
 		return self.value
 
-	def updateSensorValue(self, roomId, sensorValues):
+	def updateSensorValues(self, sensorValues):
 		startPage = self.frames[StartPage]
-		for sensor in sensorValues:
-			startPage.updateSensorValue(sensor['id'], sensor['value'])
+		startPage.updateSensorValues(sensorValues)
 	
 	def updateSensorData(self, sensor, room):
 		startPage = self.frames[StartPage]

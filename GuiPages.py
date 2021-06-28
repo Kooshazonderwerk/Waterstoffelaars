@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter.constants import COMMAND
 import numpy as np
 from tkinter import Widget, ttk
 from typing import final
@@ -40,6 +41,12 @@ class StartPage(tk.Frame):
         self.loadedObstacles = []
         self.scrollable_frame_sensors = {}
         self.scrollable_frame_obstacle = {}
+        self.ax = {}
+        self.roomInfo = {}
+        self.toolbar = {}
+        self.btnEditSensor = {}
+        self.sensorplots = {}
+        self.obstaclePlot = {}
 
         self.roomTabs = ttk.Notebook(self)
         self.roomTabs.grid(row=1, column=0, sticky="nsew")
@@ -80,8 +87,23 @@ class StartPage(tk.Frame):
             
         
     def updateRoom(self, room):
-        print('room already loaded')
-        print('feature not yet implemented')
+        self.roomInfoText[room.id]['name'].set(f"room {str(room.name)}")
+        self.roomTabs.tab(self.roomFrames[str(room.id)], text=f"room {str(room.id)}")
+        l, w, h = room.getDimensions()
+        self.roomInfo[room.id] = {
+            "id": room.id,
+            "name": room.name,
+            "width": w,
+            "height": h,
+            "length": l,
+        }
+        self.ax[room.id].set_xlim([0, w])
+        self.ax[room.id].set_ylim([0, l])
+        self.ax[room.id].set_zlim([0, h])
+        self.ax[room.id].set_box_aspect(aspect=(w, l, h))
+
+
+        
 
     def addRoomToGui(self, room):
         self.roomInfoText[room.id] = {
@@ -91,7 +113,7 @@ class StartPage(tk.Frame):
             "height": tk.StringVar(),
             "length": tk.StringVar(),
         }
-        self.roomInfoText[room.id]['id'].set(f"room {str(room.id)}")
+        self.roomInfoText[room.id]['name'].set(f"room {str(room.name)}")
         self.sensorFrames[str(room.id)] = {}
         self.obstacleFrames[str(room.id)] = {}
 
@@ -108,10 +130,10 @@ class StartPage(tk.Frame):
         
         # Room info frame
         frmRoomInfo = ttk.Frame(self.roomFrames[str(room.id)])
-        lblRoomInfoName = ttk.Label(frmRoomInfo, textvariable=self.roomInfoText[room.id]['id'])
+        lblRoomInfoName = ttk.Label(frmRoomInfo, textvariable=self.roomInfoText[room.id]['name'])
 
         l, w, h = room.getDimensions()
-        roomInfo = {
+        self.roomInfo[room.id] = {
             "id": room.id,
             "name": room.name,
             "width": w,
@@ -120,7 +142,7 @@ class StartPage(tk.Frame):
         }
 
         btnEditRoom = ttk.Button(frmRoomInfo, text="Edit room",
-                                 command=lambda: self.controller.show_frame(EditRoomPage, roomInfo))
+                                 command=lambda: self.controller.show_frame(EditRoomPage, self.roomInfo[room.id]))
 
         btnEditRoom.grid(row=1, column=0, padx=5, pady=5)
 
@@ -180,74 +202,30 @@ class StartPage(tk.Frame):
 
         # 3d vieuw
         frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
-        # def cuboid_data(o, size=(1,1,1)):
-        #     # print(size)
-        #     l, w, h = size
-        #     x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  
-        #         [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
-        #         [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
-        #         [o[0], o[0] + l, o[0] + l, o[0], o[0]]]  
-        #     y = [[o[1], o[1], o[1] + w, o[1] + w, o[1]],  
-        #         [o[1], o[1], o[1] + w, o[1] + w, o[1]],  
-        #         [o[1], o[1], o[1], o[1], o[1]],          
-        #         [o[1] + w, o[1] + w, o[1] + w, o[1] + w, o[1] + w]]   
-        #     z = [[o[2], o[2], o[2], o[2], o[2]],                       
-        #         [o[2] + h, o[2] + h, o[2] + h, o[2] + h, o[2] + h],   
-        #         [o[2], o[2], o[2] + h, o[2] + h, o[2]],               
-        #         [o[2], o[2], o[2] + h, o[2] + h, o[2]]]               
-        #     return np.array(x), np.array(y), np.array(z)
-
-        # def plotCubeAt(pos=(0,0,0), size=(1,1,1), ax=None,**kwargs):
-        #     # Plotting a cube element at position pos
-        #     if ax !=None:
-        #         X, Y, Z = cuboid_data( pos, size )
-        #         ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
 
 
-        # fig = Figure(facecolor='xkcd:brown', dpi=100)
+        fig = Figure(facecolor='xkcd:brown', dpi=100)
 
-        # canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
-        # canvas.draw()
+        canvas = FigureCanvasTkAgg(fig, master=frm3Dview)
+        canvas.draw()
 
-        # ax = fig.add_subplot(111, projection='3d')
-        # fig.tight_layout()
-        # t1 = room.getDimensions()
-        # x1, y1, z1 = t1
+        self.ax[room.id] = fig.add_subplot(111, projection='3d')
+        fig.tight_layout()
+        t1 = room.getDimensions()
+        x1, y1, z1 = t1
 
-        # ax.grid(False)
-        # ax.set_facecolor('xkcd:brown')
-        # ax.set_xlim([0, x1])
-        # ax.set_ylim([0, y1])
-        # ax.set_zlim([0, z1])
-        # ax.set_box_aspect(aspect=(x1, y1, z1))
+        self.ax[room.id].grid(False)
+        self.ax[room.id].set_facecolor('xkcd:brown')
+        self.ax[room.id].set_xlim([0, x1])
+        self.ax[room.id].set_ylim([0, y1])
+        self.ax[room.id].set_zlim([0, z1])
+        self.ax[room.id].set_box_aspect(aspect=(x1, y1, z1))
 
-        # list = room.getSensors()
-        # listObstacles = room.getObstacles()
 
-        # for i in list:
-        #     t2 = i.getLocation()
-        #     x2, y2, z2 = t2
-        #     ms = 20  # markersize
-        #     ax.plot(x2, y2, z2, 'or')
-        #     ax.plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
-        #     for x in range(5):
-        #         ax.plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-        #         ax.plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
-        #         ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
-        #         ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-        #         ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
-        
-        # for i in listObstacles:
-        #     t3 = i.getLocation()
-        #     x3, y3, z3, x4, y4, z4 = t3
-        #     positions = (x3,y3,z3)
-        #     sizes = (x4,y4,z4)
-        #     plotCubeAt(pos=positions, size=sizes, ax=ax)
+        self.toolbar[room.id] = NavigationToolbar2Tk(canvas, frm3Dview)
+        self.toolbar[room.id].update()
 
-        # toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
-        # toolbar.update()
-
-        # canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
         frm3Dview.grid(row=2, column=3, padx=5, pady=5)
     
@@ -255,12 +233,21 @@ class StartPage(tk.Frame):
         if room.id in self.loadedRooms:
             print("room is loaded")
             if sensor.id in self.loadedSensors:
-                print("obstacle is loaded")
+                self.updateSensor(sensor, room)
             else:
+                print("going once")
                 self.addSensorToGui(sensor, room)
+                self.loadedSensors.append(sensor.id)
+    
+    def updateSensor(self, sensor, room):
+        self.sensorInfoTexts[sensor.id]['name']
+        self.btnEditSensor[sensor.id].configure(command=lambda: self.loadSensorEditPage(room, sensor))
+        # t2 = sensor.getLocation()
+        t2 = (16,16,16)
+        x2, y2, z2 = t2
+        self.sensorplots[sensor.id].set_data_3d(x2,y2,z2)
 
     def addSensorToGui(self, sensor, room):
-        print(room.id)
         self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame_sensors[room.id], width=100, height=10,
                                                                     relief=tk.GROOVE, borderwidth=5)
         text = tk.StringVar()
@@ -273,7 +260,7 @@ class StartPage(tk.Frame):
         sensorInfo['name'].set(sensor.name)
         lblSensorName = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], textvariable=sensorInfo['name'])
         lblSensorValue = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], textvariable=text)
-        btnEditSensor = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit",
+        self.btnEditSensor[sensor.id] = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit",
                                    command=lambda: self.loadSensorEditPage(room, sensor))
 
         # print("Sensor id", sensor.id, "| Sensor value:", sensor.value)
@@ -281,16 +268,39 @@ class StartPage(tk.Frame):
 
         lblSensorName.grid(row=0, column=0)
         lblSensorValue.grid(row=0, column=1)
-        btnEditSensor.grid(row=0, column=2)
+        self.btnEditSensor[sensor.id].grid(row=0, column=2)
         self.sensorvalues[str(sensor.id)] = text
         self.sensorInfoTexts[sensor.id] = sensorInfo
+
+        t2 = sensor.getLocation()
+        x2, y2, z2 = t2
+        ms = 20  # markersize
+        sensorPlot = self.ax[room.id].plot(x2, y2, z2, 'or')
+        self.sensorplots[sensor.id] = sensorPlot[0]
+        self.ax[room.id].plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
+        for x in range(5):
+            self.ax[room.id].plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+            self.ax[room.id].plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
+            self.ax[room.id].plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
+            self.ax[room.id].plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+            self.ax[room.id].plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
 
     def loadObstacle(self, obstacle, room):
         if room.id in self.loadedRooms:
             if obstacle.id in self.loadedObstacles:
-                print("sensor is loaded")
+                self.updateObstacle(obstacle, room)
             else:
                 self.addObstacleToGui(obstacle, room)
+                self.loadedObstacles.append(obstacle.id)
+
+    def updateObstacle(self, obstacle, room):
+        self.obstacleInfoTexts['name'].set(obstacle.name)
+        t3 = obstacle.getLocation()
+        x3, y3, z3, x4, y4, z4 = t3
+        positions = (x3,y3,z3)
+        sizes = (x4,y4,z4)
+        self.obstaclePlot[obstacle.id].remove()
+        self.obstaclePlot[obstacle.id] = plotCubeAt(pos=positions, size=sizes, ax=self.ax[room.id])
     
     def addObstacleToGui(self, obstacle, room):
         obstacleInfo = {
@@ -309,6 +319,12 @@ class StartPage(tk.Frame):
         btnEditObstacle.grid(row=0, column=2)
 
         self.obstacleInfoTexts[obstacle.id] = obstacleInfo
+
+        t3 = obstacle.getLocation()
+        x3, y3, z3, x4, y4, z4 = t3
+        positions = (x3,y3,z3)
+        sizes = (x4,y4,z4)
+        self.obstaclePlot[obstacle.id] = plotCubeAt(pos=positions, size=sizes, ax=self.ax[room.id])
 
     def post(self, data):
         pass
@@ -331,6 +347,10 @@ class StartPage(tk.Frame):
 
     def updateSensorValue(self, sensorId, sensorValue):
         self.sensorvalues[str(sensorId)].set(sensorValue)
+
+    def updateSensorValues(self, sensorValues):
+        for key in sensorValues.keys():
+            self.updateSensorValue(key, sensorValues[key])
     
     # def updateRoom(self, roomId, roomInfo):
     #     # print(roomId)
@@ -346,10 +366,6 @@ class StartPage(tk.Frame):
             else:
                 self.loadSensor(sensor, room, index)
     
-    def updateSensor(self, sensor):
-        sensorId = sensor.getId()
-        self.sensorInfoTexts[sensorId]['name'].set(sensor.getName())
-    
     def updateObstacles(self, roomId):
         room = self.controller.program.getRoom(roomId)
         for index, obstacle in enumerate(room.getObstacles()):
@@ -357,11 +373,32 @@ class StartPage(tk.Frame):
                 self.updateObstacle(obstacle)
             else:
                 self.loadObstacle(obstacle, room, index)
+
+def cuboid_data(o, size=(1,1,1)):
+    # print(size)
+    l, w, h = size
+    x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+        [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+        [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+        [o[0], o[0] + l, o[0] + l, o[0], o[0]]]  
+    y = [[o[1], o[1], o[1] + w, o[1] + w, o[1]],  
+        [o[1], o[1], o[1] + w, o[1] + w, o[1]],  
+        [o[1], o[1], o[1], o[1], o[1]],          
+        [o[1] + w, o[1] + w, o[1] + w, o[1] + w, o[1] + w]]   
+    z = [[o[2], o[2], o[2], o[2], o[2]],                       
+        [o[2] + h, o[2] + h, o[2] + h, o[2] + h, o[2] + h],   
+        [o[2], o[2], o[2] + h, o[2] + h, o[2]],               
+        [o[2], o[2], o[2] + h, o[2] + h, o[2]]]               
+    return np.array(x), np.array(y), np.array(z)
+
+def plotCubeAt(pos=(0,0,0), size=(1,1,1), ax=None,**kwargs):
+    # Plotting a cube element at position pos
+    if ax !=None:
+        X, Y, Z = cuboid_data( pos, size )
+        plot = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
+        return plot
     
-    def updateObstacle(self, obstacle):
-        obstacleId = obstacle.getId()
-        self.obstacleInfoTexts[obstacleId]['name'].set(obstacle.getName())
-            
+        
 
 class EditRoomPage(tk.Frame):
     def __init__(self, parent, controller):

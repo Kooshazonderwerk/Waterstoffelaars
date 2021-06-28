@@ -100,8 +100,8 @@ class Program:
 		self.network.editObstacle(id, name, x1, y1, z1, x2, y2, z2)
 
 
-	def updateSensorValue(self, roomId, sensorValues):
-		self.gui.updateSensorValue(roomId, sensorValues)
+	def updateSensorValues(self, sensorValues):
+		self.gui.updateSensorValues(sensorValues)
 	
 	# def startThreads(self):
 	# 	for t in self.webSockets:
