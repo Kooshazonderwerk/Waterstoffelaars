@@ -7,23 +7,25 @@ from matplotlib.figure import Figure
 
 import matplotlib.pyplot as plt
 from numpy import equal
+
 plt.style.use('seaborn-white')
+
 
 class Visualization:
 
     def calcPointValue(self, sensorLocations, sensorValues, x, y, z, p):
-        
+
         A = 0
         B = 0
         for index, sensor in enumerate(sensorLocations):
-            C = 1/np.power(self.distance(x, y, z, sensor), p)
-            A += C*sensorValues[index]
+            C = 1 / np.power(self.distance(x, y, z, sensor), p)
+            A += C * sensorValues[index]
             B += C
 
-        #B = 0
-        #for sensor in sensorLocations:
+        # B = 0
+        # for sensor in sensorLocations:
         #    B += 1/np.power(self.distance(x, y, z, sensor), p)
-    
+
         return A / B
 
     def distance(self, x, y, z, other):
@@ -34,7 +36,7 @@ class Visualization:
         fig = plt.figure()
         plt.ioff()
 
-        res = 3 #resolution, steps per dimension value
+        res = 3  # resolution, steps per dimension value
 
         if view == 0:
             l, w, h = room.getDimensions()
@@ -43,10 +45,10 @@ class Visualization:
         else:
             h, l, w = room.getDimensions()
 
-        x = np.linspace(0, l, l*res)
-        y = np.linspace(0, w, w*res)
+        x = np.linspace(0, l, l * res)
+        y = np.linspace(0, w, w * res)
         X, Y = np.meshgrid(x, y)
-        
+
         sensorLocations = []
         sensorValues = []
         for sensor in room.getSensors():
@@ -57,7 +59,7 @@ class Visualization:
                 temp = [sX, sZ, sY]
             else:
                 temp = [sY, sZ, sX]
-            #print(temp)
+            # print(temp)
             sensorLocations.append(temp)
             sensorValues.append(sensor.getValue())
 
@@ -65,12 +67,12 @@ class Visualization:
         for indey, yC in enumerate(y):
             Z.append([])
             for xC in x:
-                arr = Z[int(indey)]               
+                arr = Z[int(indey)]
                 arr.append(self.calcPointValue(sensorLocations, sensorValues, xC, yC, slice, p))
-        
+
         plt.axes().set_aspect('equal', 'box')
         plt.contourf(X, Y, Z, 50, cmap='viridis')
-        plt.clim(0,1)
+        plt.clim(0, 1)
         plt.colorbar(ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
         if view == 0:
             plt.title("IDW Hydrogen concentration, p: " + str(p) + ", at height: " + str(slice))
@@ -83,12 +85,12 @@ class Visualization:
         else:
             plt.title("IDW Hydrogen concentration, p: " + str(p) + ", at length: " + str(slice))
             plt.xlabel("Width")
-            plt.ylabel("Height") 
+            plt.ylabel("Height")
 
         return fig
 
     def view3D(self, room):
-        
+
         fig = Figure(facecolor='xkcd:brown', dpi=100)
 
         ax = fig.add_subplot(111, projection='3d')
@@ -106,59 +108,68 @@ class Visualization:
         list = room.getSensors()
         listObstacles = room.getObstacles()
 
+        # Legenda in 3dView
+        ax.plot(-1000, -1000, -1000, 'o', label='VERY LOW', color='#95A5A6', markersize=10, alpha=0.5)
+        ax.plot(-1000, -1000, -1000, 'o', label='LOW', color='g', markersize=10, alpha=0.5)
+        ax.plot(-1000, -1000, -1000, 'o', label='MODERATE', color='b', markersize=10, alpha=0.5)
+        ax.plot(-1000, -1000, -1000, 'o', label='HIGH', color='#FF5733', markersize=10, alpha=0.5)
+        ax.plot(-1000, -1000, -1000, 'o', label='VERY HIGH', color='r', markersize=10, alpha=0.5)
+
         for i in list:
             t2 = i.getLocation()
             x2, y2, z2 = t2
-            ms = 20  # markersize
+            trans = 0.3
+            ax.plot(x2, y2, z2, color='#000000', marker='s', markersize=5)
             if i.value < 0.1:
-                ax.plot(x2, y2, z2, 'o',color='#95A5A6', markersize=5)
+                ax.plot(x2, y2, z2, 'o', color='#95A5A6', markersize=5, alpha=trans)
             if i.value > 0.1:
-                ax.plot(x2, y2, z2, 'o',color='g', markersize=10)
+                ax.plot(x2, y2, z2, 'o', color='g', markersize=10, alpha=trans)
             if i.value > 0.2:
-                ax.plot(x2, y2, z2, 'o',color='b',markersize=20)
+                ax.plot(x2, y2, z2, 'o', color='b', markersize=20, alpha=trans)
             if i.value > 0.4:
-                ax.plot(x2, y2, z2, 'o',color='#FF5733',markersize=40)
+                ax.plot(x2, y2, z2, 'o', color='#FF5733', markersize=40, alpha=trans)
             if i.value > 0.6:
-                ax.plot(x2, y2, z2, 'o',color='r',markersize=60)
+                ax.plot(x2, y2, z2, 'o', color='r', markersize=60, alpha=trans)
 
-            # ax.plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
-            # for x in range(5):
-            #     ax.plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-            #     ax.plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
-            #     ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
-            #     ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-            #     ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
-        
+        ax.legend(numpoints=1)
+        # ax.plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
+        # for x in range(5):
+        #     ax.plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+        #     ax.plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
+        #     ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
+        #     ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
+        #     ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
+
         for i in listObstacles:
             t3 = i.getLocation()
             x3, y3, z3, x4, y4, z4 = t3
-            positions = (x3,y3,z3)
-            sizes = (x4,y4,z4)
+            positions = (x3, y3, z3)
+            sizes = (x4, y4, z4)
             self.plotCubeAt(pos=positions, size=sizes, ax=ax)
 
-        
         return fig
 
-        #wat is dit?
-    def cuboid_data(self, o, size=(1,1,1)):
-        #print(size)
+        # wat is dit?
+
+    def cuboid_data(self, o, size=(1, 1, 1)):
+        # print(size)
         l, w, h = size
-        x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  
-            [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
-            [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
-            [o[0], o[0] + l, o[0] + l, o[0], o[0]]]  
-        y = [[o[1], o[1], o[1] + w, o[1] + w, o[1]],  
-            [o[1], o[1], o[1] + w, o[1] + w, o[1]],  
-            [o[1], o[1], o[1], o[1], o[1]],          
-            [o[1] + w, o[1] + w, o[1] + w, o[1] + w, o[1] + w]]   
-        z = [[o[2], o[2], o[2], o[2], o[2]],                       
-            [o[2] + h, o[2] + h, o[2] + h, o[2] + h, o[2] + h],   
-            [o[2], o[2], o[2] + h, o[2] + h, o[2]],               
-            [o[2], o[2], o[2] + h, o[2] + h, o[2]]]               
+        x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],
+             [o[0], o[0] + l, o[0] + l, o[0], o[0]],
+             [o[0], o[0] + l, o[0] + l, o[0], o[0]],
+             [o[0], o[0] + l, o[0] + l, o[0], o[0]]]
+        y = [[o[1], o[1], o[1] + w, o[1] + w, o[1]],
+             [o[1], o[1], o[1] + w, o[1] + w, o[1]],
+             [o[1], o[1], o[1], o[1], o[1]],
+             [o[1] + w, o[1] + w, o[1] + w, o[1] + w, o[1] + w]]
+        z = [[o[2], o[2], o[2], o[2], o[2]],
+             [o[2] + h, o[2] + h, o[2] + h, o[2] + h, o[2] + h],
+             [o[2], o[2], o[2] + h, o[2] + h, o[2]],
+             [o[2], o[2], o[2] + h, o[2] + h, o[2]]]
         return np.array(x), np.array(y), np.array(z)
 
-    def plotCubeAt(self, pos=(0,0,0), size=(1,1,1), ax=None,**kwargs):
+    def plotCubeAt(self, pos=(0, 0, 0), size=(1, 1, 1), ax=None, **kwargs):
         # Plotting a cube element at position pos
-        if ax !=None:
-            X, Y, Z = self.cuboid_data(pos, size )
+        if ax != None:
+            X, Y, Z = self.cuboid_data(pos, size)
             ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
