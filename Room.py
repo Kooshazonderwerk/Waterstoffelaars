@@ -31,10 +31,7 @@ class Room:
 			
 	'''Takes a object of type Sensor and updates it in the dict of sensors'''
 	def updateSensor(self, sensor):
-		if(isinstance(sensor, Sensor)):
-			self.sensorList[sensor.id].update(sensor)
-		else:
-			print(str(type(sensor))+' object is not of Type Sensor') #ERRORHANDELING
+		self.sensorList[sensor['id']].update(sensor)
 
 	'''takes a sensor id and if it exist returns the corresponding sensor else it returns none'''
 	def getSensor(self, sensorId):
@@ -51,10 +48,7 @@ class Room:
 
 	'''Takes a object of type Obstacle and updates it in the dict of obstacles'''
 	def updateObstacle(self, obstacle):
-		if(isinstance(obstacle, Obstacle)):
-			self.obstacleList[obstacle.id].update(obstacle)
-		else:
-			print(str(type(obstacle))+' object is not of Type Obstacle') #ERRORHANDELING
+		self.obstacleList[obstacle['id']].update(obstacle)
 	
 	'''takes a sensor id and if it exist returns the corresponding sensor else it returns none'''
 	def getObstacle(self, obstacleId):
@@ -65,6 +59,12 @@ class Room:
 	'''returns a list with all obstacles currently holded by the Room object'''
 	def getObstacles(self):
 		return self.obstacleList
+
+	def getObstacleList(self):
+		response = []
+		for key, value in self.obstacleList.items():
+			response.append(value)
+		return response
 	
 	'''returns a tuple with 3 ints containing the current stored size of the Room object'''
 	def getDimensions(self):

@@ -46,9 +46,6 @@ class Visualization:
         x = np.linspace(0, l, l*res)
         y = np.linspace(0, w, w*res)
         X, Y = np.meshgrid(x, y)
-        print("wtf")
-        print(room)
-        print(room.getSensorList())
         
         sensorLocations = []
         sensorValues = []
@@ -106,8 +103,8 @@ class Visualization:
         ax.set_zlim([0, z1])
         ax.set_box_aspect(aspect=(x1, y1, z1))
 
-        list = room.getSensors()
-        listObstacles = room.getObstacles()
+        list = room.getSensorList()
+        listObstacles = room.getObstacleList()
 
         for i in list:
             t2 = i.getLocation()
