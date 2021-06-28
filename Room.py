@@ -23,6 +23,12 @@ class Room:
 	def getSensors(self):
 		return self.sensorList
 	
+	def getSensorList(self):
+		response = []
+		for key, value in self.sensorList.items():
+			response.append(value)
+		return response
+			
 	'''Takes a object of type Sensor and updates it in the dict of sensors'''
 	def updateSensor(self, sensor):
 		if(isinstance(sensor, Sensor)):

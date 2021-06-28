@@ -41,7 +41,7 @@ class Network:
 			'z': z
 		}
 		data = json.dumps(rawData)
-		print(data)
+		#print(data)
 		requests.post(self.url+'/room/'+str(roomId), json=rawData)
 	
 	def addObstacle(self, roomId, name, x1, y1, z1, x2, y2, z2):
