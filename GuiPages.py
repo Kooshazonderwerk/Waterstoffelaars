@@ -15,15 +15,8 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-white')
 
-#  future plans
-# class GuiPage(tk.Frame):
-#     def __init__(self, parent, controller):
-#         tk.Frame.__init__(self, parent)
-
 class StartPage(tk.Frame):
 
-    currentView = np.array([], np.int)
-    view = np.array([], np.int)
     zLayer = np.array([])
     pValue = np.array([])
 
@@ -49,9 +42,6 @@ class StartPage(tk.Frame):
         rooms = self.controller.program.getRooms()
         
         for room in rooms:
-            #print(room.id-1)
-            self.currentView = np.append(self.currentView, 1)
-            self.view = np.append(self.view, 0)
             self.zLayer = np.append(self.zLayer, 0)
             self.pValue = np.append(self.pValue, 5)
             self.loadRoom(room)
@@ -149,26 +139,26 @@ class StartPage(tk.Frame):
 
         frmSensorList.grid(row=2, column=0, padx=5, pady=5)
 
-        #Change view button
+        #Buttons for changing the matplotlib view
         frmViewChange = ttk.Frame(self.roomFrames[str(room.id)])
-        btnChangeView = ttk.Button(frmViewChange, text="3D",
-                                    command=lambda: changeView())
-        btnChangeView.pack(fill=tk.Y, side=tk.LEFT)
+        btnShow3D = ttk.Button(frmViewChange, text="3D",
+                                    command=lambda: show3D())
+        btnShow3D.pack(fill=tk.Y, side=tk.LEFT)
         frmViewChange.grid(row=1, column=3, padx=5, pady=5)
 
         lbl2d = ttk.Label(frmViewChange, text="            2D controls:")
         lbl2d.pack(fill=tk.Y, side=tk.LEFT)
 
         btnTop = ttk.Button(frmViewChange, text="Top",
-                                   command=lambda: view(0))
+                                   command=lambda: show2D(0))
         btnTop.pack(fill=tk.Y, side=tk.LEFT)
 
         btnLeft = ttk.Button(frmViewChange, text="Left",
-                                    command=lambda: view(1))
+                                    command=lambda: show2D(1))
         btnLeft.pack(fill=tk.Y, side=tk.LEFT)
 
         btnRight = ttk.Button(frmViewChange, text="Right",
-                                    command=lambda: view(2))
+                                    command=lambda: show2D(2))
         btnRight.pack(fill=tk.Y, side=tk.LEFT)
 
         #variable for inverse distance weighting
@@ -186,36 +176,23 @@ class StartPage(tk.Frame):
         zEntry.insert(0, self.zLayer[room.id-1])
 
         visual = Visualization()
-              
-        def view(side):
-            self.currentView[room.id-1] = 0
-            self.view[room.id-1] = side
-            show2D()
 
-        def changeView():
-            #print("room: " + str(room.id-1))
-            #print("view: " + str(self.currentView[room.id-1]))
-            #if self.currentView[room.id-1] == 0:
-                self.currentView[room.id-1] = 1
-                frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
-                canvas = FigureCanvasTkAgg(visual.view3D(room), master=frm3Dview)
-                canvas.draw()
+        def show3D():
+            frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
+            canvas = FigureCanvasTkAgg(visual.view3D(room), master=frm3Dview)
+            canvas.draw()
 
-                toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
-                toolbar.update()
-                canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-                frm3Dview.grid(row=2, column=3, padx=5, pady=5)
-
-            #else:
-            #   self.currentView[room.id-1] = 0
-            #   show2D()
+            toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
+            toolbar.update()
+            canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+            frm3Dview.grid(row=2, column=3, padx=5, pady=5)
                 
-        def show2D():
+        def show2D(side):
             self.zLayer[room.id-1] = zEntry.get()
             self.pValue[room.id-1] = pEntry.get()
             frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
                 
-            canvas = FigureCanvasTkAgg(visual.view2D(room, self.zLayer[room.id-1], self.pValue[room.id-1], self.view[room.id-1]), master=frm2Dview)
+            canvas = FigureCanvasTkAgg(visual.view2D(room, self.zLayer[room.id-1], self.pValue[room.id-1], side), master=frm2Dview)
             canvas.draw()
 
             toolbar = NavigationToolbar2Tk(canvas, frm2Dview)
@@ -224,7 +201,7 @@ class StartPage(tk.Frame):
             frm2Dview.grid(row=2, column=3, padx=5, pady=5)
 
             
-        changeView()
+        show3D()
         
 
     

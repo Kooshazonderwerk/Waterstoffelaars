@@ -1,3 +1,4 @@
+import matplotlib
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (
@@ -29,7 +30,10 @@ class Visualization:
         return np.sqrt(np.sum(np.square(np.array([x, y, z]) - np.array(other))))
 
     def view2D(self, room, slice, p, view):
+        plt.close()
         fig = plt.figure()
+        plt.ioff()
+
         res = 3 #resolution, steps per dimension value
 
         if view == 0:
