@@ -5,11 +5,95 @@ from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from numpy import equal
-plt.style.use('seaborn-white')
+#plt.style.use('seaborn-white')
 
-class Visualization:
+class Plot2D:
+
+    def __init__(self, room, view, slice, p):
+        self.view = view
+        self.slice = slice
+        self.p = p
+
+        self.res = 3 #resolution, steps per dimension value
+        self.fig = Figure()
+        self.ax = self.fig.add_subplot(111)
+        self.ax.set_aspect('equal', 'box')
+
+        self.sensorLocations = []
+        self.sensorValues = []
+        self.updateSensorLocations(room, view)
+        self.updateDimensions(room)
+
+        if self.view == 0:
+            self.ax.set_xlabel("Length")
+            self.ax.set_ylabel("Width")
+        elif self.view == 1:
+            self.ax.set_xlabel("Length")
+            self.ax.set_ylabel("Height")
+        else:
+            self.ax.set_xlabel("Width")
+            self.ax.set_ylabel("Height") 
+
+        self.updateIDW()
+
+    def updateSensorLocations(self, room):
+        self.sensorLocations = []
+
+        for sensor in room.getSensorList():
+            sX, sY, sZ = sensor.getLocation()
+            if self.view == 0:
+                temp = [sX, sY, sZ]
+            elif self.view == 1:
+                temp = [sX, sZ, sY]
+            else:
+                temp = [sY, sZ, sX]
+            self.sensorLocations.append(temp)
+        
+        self.updateSensorValues(room)
+            
+
+    def updateSensorValues(self, room):
+        self.sensorValues = []
+
+        for sensor in room.getSensorList():
+            self.sensorValues.append(sensor.getValue())
+
+    def updateDimensions(self, room):
+        if self.view == 0:
+            l, w, h = room.getDimensions()
+        elif self.view == 1:
+            l, h, w = room.getDimensions()
+        else:
+            h, l, w = room.getDimensions()
+
+        self.x = np.linspace(0, l, l*self.res)
+        self.y = np.linspace(0, w, w*self.res)
+        self.X, self.Y = np.meshgrid(self.x, self.y)
+
+    def setSlice(self, slice):
+        self.slice = slice
+
+    def setP(self, p):
+        self.p = p
+        
+    def updateIDW(self):
+        Z = []
+        for indey, yC in enumerate(self.y):
+            Z.append([])
+            for xC in self.x:
+                arr = Z[int(indey)]                
+                arr.append(self.calcPointValue(self.sensorLocations, self.sensorValues, xC, yC, self.slice, self.p))
+
+        self.ax.contourf(self.X, self.Y, Z, 50, cmap='viridis', vmin=0, vmax=1)
+
+        if self.view == 0:
+            self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at height: " + str(self.slice))
+        elif self.view == 1:
+            self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at width: " + str(self.slice))
+        else:
+            self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at length: " + str(self.slice))
 
     def calcPointValue(self, sensorLocations, sensorValues, x, y, z, p):
         
@@ -20,72 +104,20 @@ class Visualization:
             A += C*sensorValues[index]
             B += C
 
-        #B = 0
-        #for sensor in sensorLocations:
-        #    B += 1/np.power(self.distance(x, y, z, sensor), p)
-    
         return A / B
 
     def distance(self, x, y, z, other):
         return np.sqrt(np.sum(np.square(np.array([x, y, z]) - np.array(other))))
 
-    def view2D(self, room, slice, p, view):
-        plt.close()
-        fig = plt.figure()
-        plt.ioff()
-
-        res = 3 #resolution, steps per dimension value
-
-        if view == 0:
-            l, w, h = room.getDimensions()
-        elif view == 1:
-            l, h, w = room.getDimensions()
-        else:
-            h, l, w = room.getDimensions()
-
-        x = np.linspace(0, l, l*res)
-        y = np.linspace(0, w, w*res)
-        X, Y = np.meshgrid(x, y)
+    #def view2D(self, room, slice, p):       
         
-        sensorLocations = []
-        sensorValues = []
-        for sensor in room.getSensorList():
-            sX, sY, sZ = sensor.getLocation()
-            if view == 0:
-                temp = [sX, sY, sZ]
-            elif view == 1:
-                temp = [sX, sZ, sY]
-            else:
-                temp = [sY, sZ, sX]
-            #print(temp)
-            sensorLocations.append(temp)
-            sensorValues.append(sensor.getValue())
+        #ax.clim(0,1)
+        #ax.colorbar(ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
 
-        Z = []
-        for indey, yC in enumerate(y):
-            Z.append([])
-            for xC in x:
-                arr = Z[int(indey)]                
-                arr.append(self.calcPointValue(sensorLocations, sensorValues, xC, yC, slice, p))
-        
-        plt.axes().set_aspect('equal', 'box')
-        plt.contourf(X, Y, Z, 50, cmap='viridis')
-        plt.clim(0,1)
-        plt.colorbar(ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
-        if view == 0:
-            plt.title("IDW Hydrogen concentration, p: " + str(p) + ", at height: " + str(slice))
-            plt.xlabel("Length")
-            plt.ylabel("Width")
-        elif view == 1:
-            plt.title("IDW Hydrogen concentration, p: " + str(p) + ", at width: " + str(slice))
-            plt.xlabel("Length")
-            plt.ylabel("Height")
-        else:
-            plt.title("IDW Hydrogen concentration, p: " + str(p) + ", at length: " + str(slice))
-            plt.xlabel("Width")
-            plt.ylabel("Height") 
+    def getFig(self):
+        return self.fig
 
-        return fig
+
 
 
 class Plot3D:

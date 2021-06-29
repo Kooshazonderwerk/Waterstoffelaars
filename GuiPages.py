@@ -5,7 +5,7 @@ from tkinter import Widget, ttk
 from Sensor import Sensor
 from Obstacle import Obstacle
 from Program import Program
-from Visualization import Plot3D, Visualization
+from Visualization import Plot3D, Plot2D
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -39,6 +39,9 @@ class StartPage(tk.Frame):
         self.toolbar = {}
         self.btnEditSensor = {}
         self.plot3d = {}
+        self.plot2dTop = {}
+        self.plot2dLeft = {}
+        self.plot2dRight = {}
 
         self.roomTabs = ttk.Notebook(self)
         self.roomTabs.grid(row=1, column=0, sticky="nsew")
@@ -198,6 +201,41 @@ class StartPage(tk.Frame):
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         frm3Dview.grid(row=2, column=3, padx=5, pady=5)
 
+        # 2d top view
+        self.plot2dTop[room.id] = Plot2D(room, 0)
+        
+        frm2Dtop = ttk.Frame(self.roomFrames[str(room.id)])
+        canvas = FigureCanvasTkAgg(self.plot2dTop[room.id].getFig(), master=frm2Dtop)
+        canvas.draw()
+
+        toolbar = NavigationToolbar2Tk(canvas, frm2Dtop)
+        toolbar.update()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        frm2Dtop.grid(row=2, column=3, padx=5, pady=5)
+
+        # 2d left view
+        self.plot2dLeft[room.id] = Plot2D(room, 1)
+        
+        frm2Dleft = ttk.Frame(self.roomFrames[str(room.id)])
+        canvas = FigureCanvasTkAgg(self.plot2dLeft[room.id].getFig(), master=frm2Dleft)
+        canvas.draw()
+
+        toolbar = NavigationToolbar2Tk(canvas, frm2Dleft)
+        toolbar.update()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        frm2Dleft.grid(row=2, column=3, padx=5, pady=5)
+
+        # 2d right view
+        self.plot2dRight[room.id] = Plot2D(room, 2)
+        
+        frm2Dright = ttk.Frame(self.roomFrames[str(room.id)])
+        canvas = FigureCanvasTkAgg(self.plot2dRight[room.id].getFig(), master=frm2Dright)
+        canvas.draw()
+
+        toolbar = NavigationToolbar2Tk(canvas, frm2Dright)
+        toolbar.update()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        frm2Dright.grid(row=2, column=3, padx=5, pady=5)
 
         # Buttons for changing the matplotlib view
         frmViewChange = ttk.Frame(self.roomFrames[str(room.id)])
@@ -211,15 +249,15 @@ class StartPage(tk.Frame):
         lbl2d.pack(fill=tk.Y, side=tk.LEFT)
 
         btnTop = ttk.Button(frmViewChange, text="Top",
-                                   command=lambda: show2D(0))
+                                   command=frm2Dtop.tkraise)
         btnTop.pack(fill=tk.Y, side=tk.LEFT)
 
         btnLeft = ttk.Button(frmViewChange, text="Left",
-                                    command=lambda: show2D(1))
+                                    command=frm2Dleft.tkraise)
         btnLeft.pack(fill=tk.Y, side=tk.LEFT)
 
-        
-        btnRight = ttk.Button(frmViewChange, text="Right", command=lambda: show2D(2))
+        btnRight = ttk.Button(frmViewChange, text="Right", 
+                                    command=frm2Dright.tkraise)
         btnRight.pack(fill=tk.Y, side=tk.LEFT)
 
         #variable for inverse distance weighting
@@ -236,20 +274,20 @@ class StartPage(tk.Frame):
         zEntry.pack(fill=tk.Y, side=tk.LEFT)
         zEntry.insert(0, self.zLayer[room.id-1])
 
-        visual = Visualization()
+        #visual = Visualization()
                 
-        def show2D(side):
-            self.zLayer[room.id-1] = zEntry.get()
-            self.pValue[room.id-1] = pEntry.get()
-            frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
+        # def show2D(side):
+        #     self.zLayer[room.id-1] = zEntry.get()
+        #     self.pValue[room.id-1] = pEntry.get()
+        #     frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
                 
-            canvas = FigureCanvasTkAgg(visual.view2D(room, self.zLayer[room.id-1], self.pValue[room.id-1], side), master=frm2Dview)
-            canvas.draw()
+        #     canvas = FigureCanvasTkAgg(visual.view2D(room, self.zLayer[room.id-1], self.pValue[room.id-1], side), master=frm2Dview)
+        #     canvas.draw()
 
-            toolbar = NavigationToolbar2Tk(canvas, frm2Dview)
-            toolbar.update()
-            canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-            frm2Dview.grid(row=2, column=3, padx=5, pady=5)
+        #     toolbar = NavigationToolbar2Tk(canvas, frm2Dview)
+        #     toolbar.update()
+        #     canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        #     frm2Dview.grid(row=2, column=3, padx=5, pady=5)
 
             
         # show3D()
