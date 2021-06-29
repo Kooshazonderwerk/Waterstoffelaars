@@ -18,23 +18,15 @@ class Plot2D:
         self.res = 3 #resolution, steps per dimension value
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
-        self.ax.set_aspect('equal', 'box')
 
         self.sensorLocations = []
         self.sensorValues = []
-        self.updateSensorLocations(room, view)
+        self.updateSensorLocations(room)
         self.updateDimensions(room)
 
-        if self.view == 0:
-            self.ax.set_xlabel("Length")
-            self.ax.set_ylabel("Width")
-        elif self.view == 1:
-            self.ax.set_xlabel("Length")
-            self.ax.set_ylabel("Height")
-        else:
-            self.ax.set_xlabel("Width")
-            self.ax.set_ylabel("Height") 
-
+    def update(self, room):
+        self.updateSensorLocations(room)
+        self.updateDimensions(room)
         self.updateIDW()
 
     def updateSensorLocations(self, room):
@@ -61,14 +53,14 @@ class Plot2D:
 
     def updateDimensions(self, room):
         if self.view == 0:
-            l, w, h = room.getDimensions()
+            self.l, self.w, h = room.getDimensions()
         elif self.view == 1:
-            l, h, w = room.getDimensions()
+            self.l, h, self.w = room.getDimensions()
         else:
-            h, l, w = room.getDimensions()
+            h, self.l, self.w = room.getDimensions()
 
-        self.x = np.linspace(0, l, l*self.res)
-        self.y = np.linspace(0, w, w*self.res)
+        self.x = np.linspace(0, self.l, self.l*self.res)
+        self.y = np.linspace(0, self.w, self.w*self.res)
         self.X, self.Y = np.meshgrid(self.x, self.y)
 
     def setSlice(self, slice):
@@ -83,24 +75,35 @@ class Plot2D:
             Z.append([])
             for xC in self.x:
                 arr = Z[int(indey)]                
-                arr.append(self.calcPointValue(self.sensorLocations, self.sensorValues, xC, yC, self.slice, self.p))
+                arr.append(self.calcPointValue(xC, yC))
 
+        self.ax.clear()
+        # self.fig.colorbar()
+        self.ax.set_xlim([0, self.l])
+        self.ax.set_ylim([0, self.w])
         self.ax.contourf(self.X, self.Y, Z, 50, cmap='viridis', vmin=0, vmax=1)
+        self.ax.set_aspect('equal', 'box')
 
         if self.view == 0:
             self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at height: " + str(self.slice))
+            self.ax.set_xlabel("Length")
+            self.ax.set_ylabel("Width")
         elif self.view == 1:
             self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at width: " + str(self.slice))
+            self.ax.set_xlabel("Length")
+            self.ax.set_ylabel("Height")
         else:
             self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at length: " + str(self.slice))
-
-    def calcPointValue(self, sensorLocations, sensorValues, x, y, z, p):
+            self.ax.set_xlabel("Width")
+            self.ax.set_ylabel("Height")
+ 
+    def calcPointValue(self, x, y):
         
         A = 0
         B = 0
-        for index, sensor in enumerate(sensorLocations):
-            C = 1/np.power(self.distance(x, y, z, sensor), p)
-            A += C*sensorValues[index]
+        for index, sensor in enumerate(self.sensorLocations):
+            C = 1/np.power(self.distance(x, y, self.slice, sensor), self.p)
+            A += C*self.sensorValues[index]
             B += C
 
         return A / B
@@ -115,8 +118,6 @@ class Plot2D:
 
     def getFig(self):
         return self.fig
-
-
 
 
 class Plot3D:
@@ -155,7 +156,7 @@ class Plot3D:
 
     # method to add a sensor to the graph
     def addSensor(self, sensorId, x, y, z):
-        print("wtf")
+        #print("wtf")
         self.sensors[int(sensorId)] = {}
         self.sensors[int(sensorId)]['x'] = x
         self.sensors[int(sensorId)]['y'] = y
@@ -164,7 +165,7 @@ class Plot3D:
     
     def plotSensors(self):
         for sensorId, sensorData in self.sensors.items():
-            print("test")
+            #print("test")
             if sensorData['value'] < 0.1:
                 self.ax.plot(sensorData['x'], sensorData['y'], sensorData['z'], 'o',color='#95A5A6',markersize=5)
             if sensorData['value'] > 0.1:
@@ -229,7 +230,7 @@ class Plot3D:
 
     def animate(self, i):
         self.ax.clear()
-        print(self.sensors)
+        #print(self.sensors)
         self.setRoomAxis(self.l, self.w, self.h)
         self.plotSensors()
         self.plotObstacles()
