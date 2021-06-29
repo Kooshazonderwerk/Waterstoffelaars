@@ -5,7 +5,6 @@ from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
 
-#import matplotlib.pyplot as plt
 from numpy import equal
 #plt.style.use('seaborn-white')
 
@@ -129,7 +128,9 @@ class Plot3D:
 
         self.ax = self.fig.add_subplot(111, projection='3d')
         self.fig.tight_layout()
-
+        self.l = l
+        self.w = w
+        self.h = h
 
         self.ax.grid(False)
         self.ax.set_facecolor('xkcd:brown')
@@ -140,6 +141,13 @@ class Plot3D:
 
     # method to update the room
     def updateRoom(self, l, w, h):
+        self.l = l
+        self.w = w
+        self.h = h
+        
+    def setRoomAxis(self, l, w, h):
+        self.ax.grid(False)
+        self.ax.set_facecolor('xkcd:brown')
         self.ax.set_xlim([0, l])
         self.ax.set_ylim([0, w])
         self.ax.set_zlim([0, h])
@@ -147,44 +155,52 @@ class Plot3D:
 
     # method to add a sensor to the graph
     def addSensor(self, sensorId, x, y, z):
-        sensorPlot = self.ax.plot(x, y, z, 'o',color='#95A5A6',markersize=5) # returns a list with one plot -_-
-        self.sensors[sensorId] = sensorPlot[0]
+        print("wtf")
+        self.sensors[int(sensorId)] = {}
+        self.sensors[int(sensorId)]['x'] = x
+        self.sensors[int(sensorId)]['y'] = y
+        self.sensors[int(sensorId)]['z'] = z
+        self.sensors[int(sensorId)]['value'] = 0.
+    
+    def plotSensors(self):
+        for sensorId, sensorData in self.sensors.items():
+            print("test")
+            if sensorData['value'] < 0.1:
+                self.ax.plot(sensorData['x'], sensorData['y'], sensorData['z'], 'o',color='#95A5A6',markersize=5)
+            if sensorData['value'] > 0.1:
+                self.ax.plot(sensorData['x'], sensorData['y'], sensorData['z'], 'o',color='g',markersize=10)
+            if sensorData['value'] > 0.2:
+                self.ax.plot(sensorData['x'], sensorData['y'], sensorData['z'], 'o',color='b',markersize=20)
+            if sensorData['value'] > 0.4:
+                self.ax.plot(sensorData['x'], sensorData['y'], sensorData['z'], 'o',color='#FF5733',markersize=40)
+            if sensorData['value'] > 0.6:
+                self.ax.plot(sensorData['x'], sensorData['y'], sensorData['z'], 'o',color='r',markersize=60)
+                
 
     # method to update a sensor in the graph
     def updateSensor(self, sensorId, x, y, z):
-        self.sensors[sensorId].set_data_3d(x, y, z)
+        self.sensors[int(sensorId)]['x'] = x
+        self.sensors[int(sensorId)]['y'] = y
+        self.sensors[int(sensorId)]['z'] = z
 
     # method to add an obstacle to the graph
     def addObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
-        positions = (x1,y1,z1)
-        sizes = (x2,y2,z2)
-        self.obstacles[obstacleId] = self.plotCubeAt(pos=positions, size=sizes, ax=self.ax)
+        self.obstacles[obstacleId] = {}
+        self.obstacles[obstacleId]['positions'] = (x1,y1,z1)
+        self.obstacles[obstacleId]['sizes'] = (x2,y2,z2)
 
     # method to update an obstacle in the graph
     def updateObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
-        positions = (x1,y1,z1)
-        sizes = (x2,y2,z2)
-        self.obstacles[obstacleId].remove()
-        self.obstacles[obstacleId] = self.plotCubeAt(pos=positions, size=sizes, ax=self.ax)
+        self.obstacles[obstacleId]['positions'] = (x1,y1,z1)
+        self.obstacles[obstacleId]['sizes'] = (x2,y2,z2)
+    
+    def plotObstacles(self):
+        for obstacleId, obstacle in self.obstacles.items():
+            self.plotCubeAt(pos=obstacle['positions'], size=obstacle['sizes'], ax=self.ax)
 
     # method to update sensor values in the graph
     def updateSensorData(self, sensorId, sensorValue):
-        if sensorId in self.sensors:
-            if sensorValue < 0.1:
-                self.sensors[sensorId].set_markersize(5)
-                self.sensors[sensorId].set_markerfacecolor('#95A5A6')
-            if sensorValue > 0.1:
-                self.sensors[sensorId].set_markersize(10)
-                self.sensors[sensorId].set_markerfacecolor('g')
-            if sensorValue > 0.2:
-                self.sensors[sensorId].set_markersize(20)
-                self.sensors[sensorId].set_markerfacecolor('b')
-            if sensorValue > 0.4:
-                self.sensors[sensorId].set_markersize(40)
-                self.sensors[sensorId].set_markerfacecolor('#FF5733')
-            if sensorValue > 0.6:
-                self.sensors[sensorId].set_markersize(60)
-                self.sensors[sensorId].set_markerfacecolor('r')
+        self.sensors[int(sensorId)]['value'] = sensorValue
 
 
     def cuboid_data(self, o, size=(1,1,1)):
@@ -210,3 +226,10 @@ class Plot3D:
             X, Y, Z = self.cuboid_data(pos, size )
             plot = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
             return plot
+
+    def animate(self, i):
+        self.ax.clear()
+        print(self.sensors)
+        self.setRoomAxis(self.l, self.w, self.h)
+        self.plotSensors()
+        self.plotObstacles()
