@@ -10,6 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
+import matplotlib.animation as animation
 
 class StartPage(tk.Frame):
 
@@ -39,6 +40,7 @@ class StartPage(tk.Frame):
         self.toolbar = {}
         self.btnEditSensor = {}
         self.plot3d = {}
+        self.ani = {}
 
         self.roomTabs = ttk.Notebook(self)
         self.roomTabs.grid(row=1, column=0, sticky="nsew")
@@ -193,13 +195,16 @@ class StartPage(tk.Frame):
         canvas = FigureCanvasTkAgg(self.plot3d[room.id].getFig(), master=frm3Dview)
         canvas.draw()
 
+        self.ani[room.id] = animation.FuncAnimation(self.plot3d[room.id].getFig(), self.plot3d[room.id].animate, interval=500, blit=False)
+        
+
         toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
         toolbar.update()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         frm3Dview.grid(row=2, column=3, padx=5, pady=5)
 
 
-        # Buttons for changing the matplotlib view
+        # # Buttons for changing the matplotlib view
         frmViewChange = ttk.Frame(self.roomFrames[str(room.id)])
         btnShow3D = ttk.Button(frmViewChange, text="3D",
                                     command=frm3Dview.tkraise)
@@ -263,7 +268,7 @@ class StartPage(tk.Frame):
                 print("going once")
                 self.addSensorToGui(sensor, room)
                 self.loadedSensors.append(sensor.id)
-    
+
     def updateSensor(self, sensor, room):
         self.sensorInfoTexts[sensor.id]['name'].set(sensor.name)
         self.btnEditSensor[sensor.id].configure(command=lambda: self.loadSensorEditPage(room, sensor))
