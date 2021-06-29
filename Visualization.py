@@ -65,7 +65,7 @@ class Visualization:
         for indey, yC in enumerate(y):
             Z.append([])
             for xC in x:
-                arr = Z[int(indey)]               
+                arr = Z[int(indey)]                
                 arr.append(self.calcPointValue(sensorLocations, sensorValues, xC, yC, slice, p))
         
         plt.axes().set_aspect('equal', 'box')
@@ -87,59 +87,74 @@ class Visualization:
 
         return fig
 
-    def view3D(self, room):
-        
-        fig = Figure(facecolor='xkcd:brown', dpi=100)
 
-        ax = fig.add_subplot(111, projection='3d')
-        fig.tight_layout()
-        t1 = room.getDimensions()
-        x1, y1, z1 = t1
+class Plot3D:
+    # initialize the room 
+    def __init__(self, l, w, h):
+        self.sensors = {}
+        self.obstacles = {}
+        self.fig = Figure(facecolor='xkcd:brown', dpi=100)
 
-        ax.grid(False)
-        ax.set_facecolor('xkcd:brown')
-        ax.set_xlim([0, x1])
-        ax.set_ylim([0, y1])
-        ax.set_zlim([0, z1])
-        ax.set_box_aspect(aspect=(x1, y1, z1))
+        self.ax = self.fig.add_subplot(111, projection='3d')
+        self.fig.tight_layout()
 
-        list = room.getSensorList()
-        listObstacles = room.getObstacleList()
 
-        for i in list:
-            t2 = i.getLocation()
-            x2, y2, z2 = t2
-            ms = 20  # markersize
-            if i.value < 0.1:
-                ax.plot(x2, y2, z2, 'o',color='#95A5A6', markersize=5)
-            if i.value > 0.1:
-                ax.plot(x2, y2, z2, 'o',color='g', markersize=10)
-            if i.value > 0.2:
-                ax.plot(x2, y2, z2, 'o',color='b',markersize=20)
-            if i.value > 0.4:
-                ax.plot(x2, y2, z2, 'o',color='#FF5733',markersize=40)
-            if i.value > 0.6:
-                ax.plot(x2, y2, z2, 'o',color='r',markersize=60)
+        self.ax.grid(False)
+        self.ax.set_facecolor('xkcd:brown')
+        self.updateRoom(l, w, h)
+    
+    def getFig(self):
+        return self.fig
 
-            # ax.plot(x2, y2, z2, 'or', markersize=50, alpha=0.15)
-            # for x in range(5):
-            #     ax.plot(x2 + ms * x, y2 + ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-            #     ax.plot(x2 + ms * x, y2 - ms * x, z2, 'o', markersize=ms, alpha=0.15)
-            #     ax.plot(x2 - ms * x, y2, z2, 'o', markersize=ms, alpha=0.15)
-            #     ax.plot(x2, y2 - ms * x, z2 + ms * x, 'o', markersize=ms, alpha=0.15)
-            #     ax.plot(x2, y2, z2 - ms * x, 'o', markersize=ms, alpha=0.15)
-        
-        for i in listObstacles:
-            t3 = i.getLocation()
-            x3, y3, z3, x4, y4, z4 = t3
-            positions = (x3,y3,z3)
-            sizes = (x4,y4,z4)
-            self.plotCubeAt(pos=positions, size=sizes, ax=ax)
+    # method to update the room
+    def updateRoom(self, l, w, h):
+        self.ax.set_xlim([0, l])
+        self.ax.set_ylim([0, w])
+        self.ax.set_zlim([0, h])
+        self.ax.set_box_aspect(aspect=(l, w, h))
 
-        
-        return fig
+    # method to add a sensor to the graph
+    def addSensor(self, sensorId, x, y, z):
+        sensorPlot = self.ax.plot(x, y, z, 'o',color='#95A5A6',markersize=5) # returns a list with one plot -_-
+        self.sensors[sensorId] = sensorPlot[0]
 
-        #wat is dit?
+    # method to update a sensor in the graph
+    def updateSensor(self, sensorId, x, y, z):
+        self.sensors[sensorId].set_data_3d(x, y, z)
+
+    # method to add an obstacle to the graph
+    def addObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
+        positions = (x1,y1,z1)
+        sizes = (x2,y2,z2)
+        self.obstacles[obstacleId] = self.plotCubeAt(pos=positions, size=sizes, ax=self.ax)
+
+    # method to update an obstacle in the graph
+    def updateObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
+        positions = (x1,y1,z1)
+        sizes = (x2,y2,z2)
+        self.obstacles[obstacleId].remove()
+        self.obstacles[obstacleId] = self.plotCubeAt(pos=positions, size=sizes, ax=self.ax)
+
+    # method to update sensor values in the graph
+    def updateSensorData(self, sensorId, sensorValue):
+        if sensorId in self.sensors:
+            if sensorValue < 0.1:
+                self.sensors[sensorId].set_markersize(5)
+                self.sensors[sensorId].set_markerfacecolor('#95A5A6')
+            if sensorValue > 0.1:
+                self.sensors[sensorId].set_markersize(10)
+                self.sensors[sensorId].set_markerfacecolor('g')
+            if sensorValue > 0.2:
+                self.sensors[sensorId].set_markersize(20)
+                self.sensors[sensorId].set_markerfacecolor('b')
+            if sensorValue > 0.4:
+                self.sensors[sensorId].set_markersize(40)
+                self.sensors[sensorId].set_markerfacecolor('#FF5733')
+            if sensorValue > 0.6:
+                self.sensors[sensorId].set_markersize(60)
+                self.sensors[sensorId].set_markerfacecolor('r')
+
+
     def cuboid_data(self, o, size=(1,1,1)):
         #print(size)
         l, w, h = size
@@ -161,4 +176,5 @@ class Visualization:
         # Plotting a cube element at position pos
         if ax !=None:
             X, Y, Z = self.cuboid_data(pos, size )
-            ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
+            plot = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
+            return plot
