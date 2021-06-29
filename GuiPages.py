@@ -408,7 +408,7 @@ class StartPage(tk.Frame):
         self.controller.show_frame(EditObstaclePage, info)
 
     def updateSensorValue(self, sensorId, sensorValue, roomId):
-        self.sensorvalues[str(sensorId)].set(sensorValue)
+        self.sensorvalues[str(sensorId)].set("{:.4f}".format(sensorValue))
         self.plot3d[roomId].updateSensorData(int(sensorId), sensorValue)
 
     def updateSensorValues(self, sensorValues):

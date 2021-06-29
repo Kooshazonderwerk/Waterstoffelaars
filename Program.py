@@ -14,6 +14,8 @@ class Program:
 		print('my sid is', self.socketconn.sio.sid)
 
 
+	def quit(self):
+		self.socketconn.quit()
 	# Rooms
 	def getRooms(self):
 		return self.rooms

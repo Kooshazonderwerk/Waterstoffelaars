@@ -22,7 +22,7 @@ class Gui(tk.Tk):
 
 		tk.Tk.wm_title(self, CLIENT_NAME)
 		container = tk.Frame(self)
-
+		self.protocol("WM_DELETE_WINDOW", self.quitMe)
 		container.pack(side="top", fill="both", expand = True)
 		container.grid_rowconfigure(0, weight=1)
 		container.grid_columnconfigure(0, weight=1)
@@ -38,6 +38,11 @@ class Gui(tk.Tk):
 
 		self.show_frame(StartPage)
 		# self.startThreads()
+
+	def quitMe(self):
+		self.program.quit()
+		self.quit()
+		self.destroy()
 		
 	def show_frame(self, cont, post=None):
 		frame = self.frames[cont]

@@ -148,6 +148,9 @@ class SocketClientHandler():
         data = json.dumps(rawData)
         self.sio.emit('editObstacle', data)
 
+    def quit(self):
+        self.sio.disconnect()
+
 # socketconn = SocketClientHandler()
 # print('my sid is', socketconn.sio.sid)
 
