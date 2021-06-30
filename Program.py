@@ -9,7 +9,7 @@ class Program:
 		self.gui = gui
 		self.rooms = {}
 		self.sem = threading.Semaphore()
-		self.socketconn = SocketClientHandler(self)
+		self.socketconn = SocketClientHandler(self, url)
 		print('my sid is', self.socketconn.sio.sid)
 
 
