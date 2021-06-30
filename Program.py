@@ -8,7 +8,6 @@ class Program:
 	def __init__(self, gui, url):
 		self.gui = gui
 		self.rooms = {}
-		self.roomCount = 0
 		self.sem = threading.Semaphore()
 		self.socketconn = SocketClientHandler(self)
 		print('my sid is', self.socketconn.sio.sid)
@@ -22,10 +21,6 @@ class Program:
 
 	def addRoom(self, room):
 		self.rooms[room['id']] = Room(room['id'], room['name'], room['length'], room['width'], room['height']) 
-
-	def addRooms(self, rooms):
-		for room in rooms:
-			self.addRoom(room)
 		
 	def updateRoom(self, room):
 		self.rooms[room['id']].update(room)
@@ -39,9 +34,6 @@ class Program:
 		self.gui.updateRoomData(self.getRoom(room['id']))
 		self.sem.release()
 	
-	def updateRooms(self, rooms):
-		self.addRooms(rooms)
-		self.gui.updateRooms()
 
 	def createRoom(self, name, width, height, length):
 		self.socketconn.createRoom(name, width, height, length)
@@ -109,14 +101,6 @@ class Program:
 					sensor.setValue(sensorValue['value'])
 					self.gui.updateSensorValues(sensorValues)
 	
-	# def startThreads(self):
-	# 	for t in self.webSockets:
-	# 		t.start()
-	
-	def updateRoomData(self, roomId, roomInfo):
-		newRoom = Room(roomInfo[' id'], roomInfo['name'], roomInfo['length'], roomInfo['width'], roomInfo['height'], roomInfo['sensors'], roomInfo['obstacles'])
-		self.rooms[roomId] = newRoom
-		self.gui.updateRoomData(roomId, roomInfo)
 	
 	def getRoom(self, roomId):
 		if roomId in self.rooms:

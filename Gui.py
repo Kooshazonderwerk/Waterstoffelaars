@@ -77,10 +77,5 @@ class Gui(tk.Tk):
 		startPage = self.frames[StartPage]
 		startPage.loadObstacle(obstacle, room)
 
-	def updateRooms(self):
-		startPage = self.frames[StartPage]
-		startPage.loadRooms()
-
-
 	# def startThreads(self):
 	# 	self.program.startThreads()

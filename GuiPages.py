@@ -52,10 +52,6 @@ class StartPage(tk.Frame):
         self.roomTabs.grid(row=1, column=0, sticky="nsew")
         self.controller.program.socketconn.ready()
 
-    
-    def reload(self):
-        self.controller.program.socketconn.ready()
-
     # takes a room and room id and either adds it or updates an existing room.
     def loadRoom(self, room, roomId):
         print("test")
