@@ -103,10 +103,11 @@ class Program:
 	def updateSensorValues(self, sensorValues):
 		for sensorId, sensorValue in sensorValues.items():
 			room = self.getRoom(sensorValue['room_id'])
-			sensor = room.getSensor(int(sensorId))
-			sensor.setValue(sensorValue['value'])
-
-		self.gui.updateSensorValues(sensorValues)
+			if room is not None:
+				sensor = room.getSensor(int(sensorId))
+				if sensor is not None:
+					sensor.setValue(sensorValue['value'])
+					self.gui.updateSensorValues(sensorValues)
 	
 	# def startThreads(self):
 	# 	for t in self.webSockets:
@@ -118,4 +119,6 @@ class Program:
 		self.gui.updateRoomData(roomId, roomInfo)
 	
 	def getRoom(self, roomId):
-		return self.rooms[roomId]
+		if roomId in self.rooms:
+			return self.rooms[roomId]
+		return None
