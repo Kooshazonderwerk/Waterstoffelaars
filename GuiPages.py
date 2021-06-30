@@ -455,10 +455,11 @@ class StartPage(tk.Frame):
         self.controller.show_frame(EditObstaclePage, info)
 
     def updateSensorValue(self, sensorId, sensorValue, roomId):
-        self.sensorvalues[str(sensorId)].set("{:.4f}".format(sensorValue))
-        self.plot3d[roomId].updateSensorData(int(sensorId), sensorValue)
-        self.plot2dTop[roomId].updateSensorData(int(sensorId), sensorValue)
-        self.plot2dLeft[roomId].updateSensorData(int(sensorId), sensorValue)
+        if str(sensorId) in self.sensorvalues:
+            self.sensorvalues[str(sensorId)].set("{:.4f}".format(sensorValue))
+            self.plot3d[roomId].updateSensorData(int(sensorId), sensorValue)
+            self.plot2dTop[roomId].updateSensorData(int(sensorId), sensorValue)
+            self.plot2dLeft[roomId].updateSensorData(int(sensorId), sensorValue)
         self.plot2dRight[roomId].updateSensorData(int(sensorId), sensorValue)
 
     def updateSensorValues(self, sensorValues):

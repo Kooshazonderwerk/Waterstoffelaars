@@ -6,10 +6,10 @@ class SocketClientHandler():
     #Initialize socketIO client
     sio = socketio.Client(logger=False, engineio_logger=False)
 
-    def __init__(self, program):
+    def __init__(self, program, url):
         #Start connect, print info and send message 
         self.program = program
-        self.sio.connect('http://localhost:5001')
+        self.sio.connect(url)
         self.sio.on('sendAllRooms', self.handleGetRooms)
         self.sio.on('updateSensorValue', self.handleUpdateSensorValue)
         self.sio.on('sendARoom', self.roomHandler)
