@@ -7,21 +7,6 @@ import socket
 class Obstacle:
 	
 	def __init__(self, id, name, x1, y1, z1, x2, y2, z2):
-		client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		client_socket.settimeout(1.0)
-		message = 'random'.encode()
-		# change to your server ip address
-		addr = ("127.0.0.1", 12000)
-		client_socket.sendto(message, addr)
-		
-		try:
-			data, server = client_socket.recvfrom(1024)
-			resp_dict = json.loads(data.decode())
-			self.value = resp_dict['value']
-		except socket.timeout:
-			print('REQUEST TIMED OUT')
-			self.value = 0.0
-		
 
 		self.id = id
 		self.name = name
@@ -30,12 +15,9 @@ class Obstacle:
 		self.z1 = z1
 		self.x2 = x2
 		self.y2 = y2
-		self.z2 = z2        
+		self.z2 = z2
 
-	def getValue(self):
-		return self.value
 
-        
 	'''returns a tuple with 3 ints containing the current stored location of the Obstacle object'''
 	def getLocation(self):
 		return (self.x1, self.y1, self.z1, self.x2, self.y2, self.z2)
@@ -56,3 +38,13 @@ class Obstacle:
 	'''returns a string with the name stored in the Obstacle object'''
 	def getName(self):
 		return self.name
+	
+	'''takes a dict with obstacle data and updates the obstacle'''
+	def update(self, obstacle):
+		self.name = obstacle['name']
+		self.x1 = obstacle['x1']
+		self.y1 = obstacle['y1']
+		self.z1 = obstacle['z1']
+		self.x2 = obstacle['x2']
+		self.y2 = obstacle['y2']
+		self.z2 = obstacle['z2']

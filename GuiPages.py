@@ -1,59 +1,119 @@
 import tkinter as tk
+from tkinter.constants import COMMAND
 import numpy as np
 from tkinter import Widget, ttk
-from typing import final
-from Room import Room
 from Sensor import Sensor
 from Obstacle import Obstacle
 from Program import Program
-from Visualization import Visualization
+from Visualization import Plot3D, Plot2D
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
-
-import matplotlib.pyplot as plt
-plt.style.use('seaborn-white')
+import matplotlib.animation as animation
 
 class StartPage(tk.Frame):
-
-    zLayer = np.array([])
-    pValue = np.array([])
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
+        # add create button because it needs to be always accessible
         btnCreateRoom = ttk.Button(self, text="Create room", command=lambda: self.controller.show_frame(EditRoomPage))
         btnCreateRoom.grid(row=0, column=0, padx=5, pady=5)
+        
+        # self.zLayer = np.array([])
+        # self.pValue = np.array([])
+
+        self.startSlice = 0.0
+        self.startP = 5.0
 
         self.roomFrames = {}
         self.sensorFrames = {}
         self.obstacleFrames = {}
+        self.sensorvalues = {}
+        self.roomInfoText = {}
+        self.sensorInfoTexts = {}
+        self.obstacleInfoTexts = {}
+        self.loadedRooms = []
+        self.loadedSensors = []
+        self.loadedObstacles = []
+        self.scrollable_frame_sensors = {}
+        self.scrollable_frame_obstacle = {}
+        self.roomInfo = {}
+        self.toolbar = {}
+        self.btnEditSensor = {}
+        self.plot3d = {}
+        self.plot2dTop = {}
+        self.plot2dLeft = {}
+        self.plot2dRight = {}
+        self.ani = {}
 
         self.roomTabs = ttk.Notebook(self)
-        self.loadRooms()
+        self.roomTabs.grid(row=1, column=0, sticky="nsew")
+        self.controller.program.socketconn.ready()
 
+    
     def reload(self):
-        self.roomTabs = ttk.Notebook(self)
-        self.loadRooms()
+        self.controller.program.socketconn.ready()
 
-    def loadRooms(self):
-        self.controller.program.addRoomsFromNetwork()
-        rooms = self.controller.program.getRooms()
+    # takes a room and room id and either adds it or updates an existing room.
+    def loadRoom(self, room, roomId):
+        print("test")
+        if roomId in self.loadedRooms:
+            self.updateRoom(room)
+        else: 
+            #print(roomId)
+            self.loadedRooms.append(roomId)
+            self.addRoomToGui(room)
+    
+    # takes a room id and a child frame and orders it acoriding to the given id.
+    def addToRoomTabs(self, roomId, child):
+        position = roomId
+        for key in self.roomFrames.keys():
+            if int(key) > position:
+                position = int(key)
+        if(position == roomId):
+            self.roomTabs.add(child, text=f"room {roomId}")
+        else:
+            self.roomTabs.insert(where=self.roomFrames[str(position)],child=child, text=f"room {roomId}")
+        self.roomFrames[str(roomId)] = child
+            
+    
+    # takes a room and updates the loaded room in the startpage
+    def updateRoom(self, room):
+        self.roomInfoText[room.id]['name'].set(f"room {str(room.name)}")
+        self.roomTabs.tab(self.roomFrames[str(room.id)], text=f"room {str(room.id)}")
+        l, w, h = room.getDimensions()
+        self.roomInfo[room.id] = { # check this for consistency
+            "id": room.id,
+            "name": room.name,
+            "width": w,
+            "height": h,
+            "length": l,
+        }
+        self.plot3d[room.id].updateRoom(l, w, h)
         
-        for room in rooms:
-            self.zLayer = np.append(self.zLayer, 0)
-            self.pValue = np.append(self.pValue, 5)
-            self.loadRoom(room)
+    # takes a room and loads it to the startpage.
+    def addRoomToGui(self, room):
+        # This is so each room has a zLayer an pValue witch is used later in the program.
+        # self.zLayer = np.append(self.zLayer, 0)
+        # self.pValue = np.append(self.pValue, 5)
         
-
-    def loadRoom(self, room):
+        # used for the text on the room
+        # not everything is used at the moment but in the future this info needs to be displayed.
+        self.roomInfoText[room.id] = {
+            "id": tk.StringVar(),
+            "name": tk.StringVar(),
+            "width": tk.StringVar(),
+            "height": tk.StringVar(),
+            "length": tk.StringVar(),
+        }
+        self.roomInfoText[room.id]['name'].set(f"room {str(room.name)}")
+        # used to keep acces to the sensor frames for changes
         self.sensorFrames[str(room.id)] = {}
         self.obstacleFrames[str(room.id)] = {}
-        # future add room check
-        self.roomFrames[str(room.id)] = ttk.Frame(self.roomTabs)
-        self.roomTabs.add(self.roomFrames[str(room.id)], text=f"room {room.id}")
-        self.roomTabs.grid(row=1, column=0, sticky="nsew")
+
+        self.addToRoomTabs(room.id, ttk.Frame(self.roomTabs))
 
         # legend Frame
         frmLegend = ttk.Frame(self.roomFrames[str(room.id)])
@@ -62,13 +122,13 @@ class StartPage(tk.Frame):
         lblLegend.grid(row=0, column=0, padx=5, pady=5)
 
         frmLegend.grid(row=0, column=0, padx=5, pady=5)
+        
         # Room info frame
         frmRoomInfo = ttk.Frame(self.roomFrames[str(room.id)])
-        lblRoomInfoName = ttk.Label(frmRoomInfo, text=f"room {str(room.id)}")
+        lblRoomInfoName = ttk.Label(frmRoomInfo, textvariable=self.roomInfoText[room.id]['name'])
 
         l, w, h = room.getDimensions()
-
-        roomInfo = {
+        self.roomInfo[room.id] = {
             "id": room.id,
             "name": room.name,
             "width": w,
@@ -79,7 +139,7 @@ class StartPage(tk.Frame):
         btnReload.grid(row=0, column=1, padx=5, pady=5)
 
         btnEditRoom = ttk.Button(frmRoomInfo, text="Edit room",
-                                 command=lambda: self.controller.show_frame(EditRoomPage, roomInfo))
+                                 command=lambda: self.controller.show_frame(EditRoomPage, self.roomInfo[room.id]))
 
         btnEditRoom.grid(row=1, column=0, padx=5, pady=5)
 
@@ -105,15 +165,13 @@ class StartPage(tk.Frame):
         frmObstacleList = ttk.Frame(self.roomFrames[str(room.id)])
         canvasObstacleList = tk.Canvas(frmObstacleList)
         scrollbarObstacleList = ttk.Scrollbar(frmObstacleList, orient="vertical", command=canvasObstacleList.yview)
-        self.scrollable_frame = ttk.Frame(canvasObstacleList)
-        canvasObstacleList.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.scrollable_frame_obstacle[room.id] = ttk.Frame(canvasObstacleList)
+        canvasObstacleList.create_window((0, 0), window=self.scrollable_frame_obstacle[room.id], anchor="nw")
         canvasObstacleList.configure(yscrollcommand=scrollbarObstacleList.set)
         
         canvasObstacleList.bind("<Configure>", 
                               lambda e: canvasObstacleList.configure(scrollregion = canvasObstacleList.bbox("all") ))
 
-        for index, obstacle in enumerate(room.getObstacles()):
-            self.loadObstacle(obstacle, room, index)
 
         canvasObstacleList.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbarObstacleList.pack(side=tk.RIGHT, fill="y")
@@ -124,27 +182,79 @@ class StartPage(tk.Frame):
         frmSensorList = ttk.Frame(self.roomFrames[str(room.id)])
         canvasSensorList = tk.Canvas(frmSensorList)
         scrollbarSensorList = ttk.Scrollbar(frmSensorList, orient="vertical", command=canvasSensorList.yview)
-        self.scrollable_frame = ttk.Frame(canvasSensorList)
-        canvasSensorList.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.scrollable_frame_sensors[room.id] = ttk.Frame(canvasSensorList)
+        canvasSensorList.create_window((0, 0), window=self.scrollable_frame_sensors[room.id], anchor="nw")
         canvasSensorList.configure(yscrollcommand=scrollbarSensorList.set)
 
         canvasSensorList.bind("<Configure>",
                               lambda e: canvasSensorList.configure(scrollregion=canvasSensorList.bbox("all")))
 
-        for index, sensor in enumerate(room.getSensors()):
-            self.loadSensor(sensor, room, index)
 
         canvasSensorList.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbarSensorList.pack(side=tk.RIGHT, fill="y")
 
         frmSensorList.grid(row=2, column=0, padx=5, pady=5)
 
-        #Buttons for changing the matplotlib view
+        # 3d view
+        self.plot3d[room.id] = Plot3D(l, w, h)
+        
+        frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
+        canvas = FigureCanvasTkAgg(self.plot3d[room.id].getFig(), master=frm3Dview)
+        canvas.draw()
+
+        self.ani[room.id] = animation.FuncAnimation(self.plot3d[room.id].getFig(), self.plot3d[room.id].animate, interval=500, blit=False)
+        
+
+        toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
+        toolbar.update()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        frm3Dview.grid(row=2, column=3, padx=5, pady=5)
+
+        # 2d top view
+        self.plot2dTop[room.id] = Plot2D(room, 0, self.startSlice, self.startP)
+        
+        frm2Dtop = ttk.Frame(self.roomFrames[str(room.id)])
+        canvasTop = FigureCanvasTkAgg(self.plot2dTop[room.id].getFig(), master=frm2Dtop)
+        canvasTop.draw()
+
+        toolbar = NavigationToolbar2Tk(canvasTop, frm2Dtop)
+        toolbar.update()
+        canvasTop.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        frm2Dtop.grid(row=2, column=3, padx=5, pady=5)
+
+        # 2d left view
+        self.plot2dLeft[room.id] = Plot2D(room, 1, self.startSlice, self.startP)
+        
+        frm2Dleft = ttk.Frame(self.roomFrames[str(room.id)])
+        canvasLeft = FigureCanvasTkAgg(self.plot2dLeft[room.id].getFig(), master=frm2Dleft)
+        canvasLeft.draw()
+
+        toolbar = NavigationToolbar2Tk(canvasLeft, frm2Dleft)
+        toolbar.update()
+        canvasLeft.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        frm2Dleft.grid(row=2, column=3, padx=5, pady=5)
+
+        # 2d right view
+        self.plot2dRight[room.id] = Plot2D(room, 2, self.startSlice, self.startP)
+        
+        frm2Dright = ttk.Frame(self.roomFrames[str(room.id)])
+        canvasRight = FigureCanvasTkAgg(self.plot2dRight[room.id].getFig(), master=frm2Dright)
+        canvasRight.draw()
+
+        toolbar = NavigationToolbar2Tk(canvasRight, frm2Dright)
+        toolbar.update()
+        canvasRight.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        frm2Dright.grid(row=2, column=3, padx=5, pady=5)
+
+        frm3Dview.tkraise()
+        
+        # # Buttons for changing the matplotlib view
         frmViewChange = ttk.Frame(self.roomFrames[str(room.id)])
         btnShow3D = ttk.Button(frmViewChange, text="3D",
-                                    command=lambda: show3D())
+                                    command=frm3Dview.tkraise)
         btnShow3D.pack(fill=tk.Y, side=tk.LEFT)
         frmViewChange.grid(row=1, column=3, padx=5, pady=5)
+
 
         lbl2d = ttk.Label(frmViewChange, text="            2D controls:")
         lbl2d.pack(fill=tk.Y, side=tk.LEFT)
@@ -157,7 +267,7 @@ class StartPage(tk.Frame):
                                     command=lambda: show2D(1))
         btnLeft.pack(fill=tk.Y, side=tk.LEFT)
 
-        btnRight = ttk.Button(frmViewChange, text="Right",
+        btnRight = ttk.Button(frmViewChange, text="Right", 
                                     command=lambda: show2D(2))
         btnRight.pack(fill=tk.Y, side=tk.LEFT)
 
@@ -166,73 +276,118 @@ class StartPage(tk.Frame):
         lblEditP.pack(fill=tk.Y, side=tk.LEFT)
         pEntry = ttk.Entry(frmViewChange, width=3)
         pEntry.pack(fill=tk.Y, side=tk.LEFT)
-        pEntry.insert(0, self.pValue[room.id-1])
+        pEntry.insert(0, self.startP)
         
         #Layer of unseen dimension in 2d, i.e. length and width are seen, z is wich layer in depth is to be shown
         lblEditLayer = ttk.Label(frmViewChange, text="Layer:")
         lblEditLayer.pack(fill=tk.Y, side=tk.LEFT)
         zEntry = ttk.Entry(frmViewChange, width=3)
         zEntry.pack(fill=tk.Y, side=tk.LEFT)
-        zEntry.insert(0, self.zLayer[room.id-1])
+        zEntry.insert(0, self.startSlice)
 
-        visual = Visualization()
-
-        def show3D():
-            frm3Dview = ttk.Frame(self.roomFrames[str(room.id)])
-            canvas = FigureCanvasTkAgg(visual.view3D(room), master=frm3Dview)
-            canvas.draw()
-
-            toolbar = NavigationToolbar2Tk(canvas, frm3Dview)
-            toolbar.update()
-            canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-            frm3Dview.grid(row=2, column=3, padx=5, pady=5)
+        #visual = Visualization()
                 
         def show2D(side):
-            self.zLayer[room.id-1] = zEntry.get()
-            self.pValue[room.id-1] = pEntry.get()
-            frm2Dview = ttk.Frame(self.roomFrames[str(room.id)])
-                
-            canvas = FigureCanvasTkAgg(visual.view2D(room, self.zLayer[room.id-1], self.pValue[room.id-1], side), master=frm2Dview)
-            canvas.draw()
-
-            toolbar = NavigationToolbar2Tk(canvas, frm2Dview)
-            toolbar.update()
-            canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-            frm2Dview.grid(row=2, column=3, padx=5, pady=5)
-
-            
-        show3D()
         
+            if side == 0:
+                self.plot2dTop[room.id].setSlice(float(zEntry.get()))
+                self.plot2dTop[room.id].setP(float(pEntry.get()))
+                self.plot2dTop[room.id].update(room)
+                canvasTop.draw()
+                frm2Dtop.tkraise()
+            elif side == 1:
+                self.plot2dLeft[room.id].setSlice(float(zEntry.get()))
+                self.plot2dLeft[room.id].setP(float(pEntry.get()))
+                self.plot2dLeft[room.id].update(room)
+                canvasLeft.draw()
+                frm2Dleft.tkraise()
+            else:
+                self.plot2dRight[room.id].setSlice(float(zEntry.get()))
+                self.plot2dRight[room.id].setP(float(pEntry.get()))
+                self.plot2dRight[room.id].update(room)
+                canvasRight.draw()
+                frm2Dright.tkraise()
 
     
+    def loadSensor(self, sensor, room):
+        if room.id in self.loadedRooms:
+            #print("room is loaded")
+            if sensor.id in self.loadedSensors:
+                self.updateSensor(sensor, room)
+            else:
+                #print("going once")
+                self.addSensorToGui(sensor, room)
+                self.loadedSensors.append(sensor.id)
 
-    def loadSensor(self, sensor, room, position):
-        self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10,
-                                                                    relief=tk.GROOVE, borderwidth=5)
+    def updateSensor(self, sensor, room):
+        self.sensorInfoTexts[sensor.id]['name'].set(sensor.name)
+        self.btnEditSensor[sensor.id].configure(command=lambda: self.loadSensorEditPage(room, sensor))
+        x, y, z = sensor.getLocation()
+        self.plot3d[room.id].updateSensor(sensor.id, x, y, z)
 
-        lblSensorName = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], text=sensor.name)
-        lblSensorValue = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], text=f"value: {sensor.value}")
-        btnEditSensor = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit",
+    def addSensorToGui(self, sensor, room):
+        self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame_sensors[room.id], width=100, height=10, relief=tk.GROOVE, borderwidth=5)
+        text = tk.StringVar()
+        sensorInfo = {
+            'id': tk.StringVar(),
+            'name': tk.StringVar()
+
+        }
+        text.set(f"value: {sensor.value}")
+        sensorInfo['name'].set(sensor.name)
+        lblSensorName = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], textvariable=sensorInfo['name'])
+        lblSensorValue = ttk.Label(self.sensorFrames[str(room.id)][str(sensor.id)], textvariable=text)
+        self.btnEditSensor[sensor.id] = ttk.Button(self.sensorFrames[str(room.id)][str(sensor.id)], text="Edit",
                                    command=lambda: self.loadSensorEditPage(room, sensor))
 
-        #print("Sensor id", sensor.id, "| Sensor value:", sensor.value)
-        self.sensorFrames[str(room.id)][str(sensor.id)].grid(row=position, column=0, sticky="nsew")
+
+        self.sensorFrames[str(room.id)][str(sensor.id)].grid(row=sensor.id, column=0, sticky="nsew")
 
         lblSensorName.grid(row=0, column=0)
         lblSensorValue.grid(row=0, column=1)
-        btnEditSensor.grid(row=0, column=2)
+        self.btnEditSensor[sensor.id].grid(row=0, column=2)
+        self.sensorvalues[str(sensor.id)] = text
+        self.sensorInfoTexts[sensor.id] = sensorInfo
 
-    def loadObstacle(self, obstacle, room, position):
-        self.obstacleFrames[str(room.id)][str(obstacle.id)] = ttk.Frame(self.scrollable_frame, width=100, height=10, relief=tk.GROOVE, borderwidth=5)
+        x, y, z = sensor.getLocation()
+        self.plot3d[room.id].addSensor(sensor.id, x, y, z)
 
-        lblObstacleName = ttk.Label(self.obstacleFrames[str(room.id)][str(obstacle.id)], text=obstacle.name)
+
+    def loadObstacle(self, obstacle, room):
+        if room.id in self.loadedRooms:
+            if obstacle.id in self.loadedObstacles:
+                self.updateObstacle(obstacle, room)
+            else:
+                self.addObstacleToGui(obstacle, room)
+                self.loadedObstacles.append(obstacle.id)
+
+    def updateObstacle(self, obstacle, room):
+        self.obstacleInfoTexts[obstacle.id]['name'].set(obstacle.name)
+        x1, y1, z1, x2, y2, z2 = obstacle.getLocation()
+        self.plot3d[room.id].updateObstacle(obstacle.id, x1, y1, z1, x2, y2, z2)
+
+    
+    def addObstacleToGui(self, obstacle, room):
+        obstacleInfo = {
+            'name': tk.StringVar() 
+        }
+        obstacleInfo['name'].set(obstacle.name)
+        self.obstacleFrames[str(room.id)][str(obstacle.id)] = ttk.Frame(self.scrollable_frame_obstacle[room.id], width=100, height=10, relief=tk.GROOVE, borderwidth=5)
+
+        lblObstacleName = ttk.Label(self.obstacleFrames[str(room.id)][str(obstacle.id)], textvariable=obstacleInfo['name'])
         btnEditObstacle = ttk.Button(self.obstacleFrames[str(room.id)][str(obstacle.id)], text="Edit", command=lambda: self.loadObstacleEditPage(room, obstacle))
 
-        #print("Obstacle id",obstacle.id,"| Obstacle value:",obstacle.value)
-        self.obstacleFrames[str(room.id)][str(obstacle.id)].grid(row=position, column=0, sticky="nsew")
+
+        self.obstacleFrames[str(room.id)][str(obstacle.id)].grid(row=obstacle.id, column=0, sticky="nsew")
 
         lblObstacleName.grid(row=0, column=0)
         btnEditObstacle.grid(row=0, column=2)
+
+        self.obstacleInfoTexts[obstacle.id] = obstacleInfo
+
+        x1, y1, z1, x2, y2, z2 = obstacle.getLocation()
+        self.plot3d[room.id].addObstacle(obstacle.id, x1, y1, z1, x2, y2, z2)
+
 
     def post(self, data):
         pass
@@ -253,6 +408,16 @@ class StartPage(tk.Frame):
         }
         self.controller.show_frame(EditObstaclePage, info)
 
+    def updateSensorValue(self, sensorId, sensorValue, roomId):
+        self.sensorvalues[str(sensorId)].set("{:.4f}".format(sensorValue))
+        self.plot3d[roomId].updateSensorData(int(sensorId), sensorValue)
+
+    def updateSensorValues(self, sensorValues):
+        for sensorId, sensorValue in sensorValues.items():
+            self.updateSensorValue(sensorId, sensorValue['value'], sensorValue['room_id'])
+
+    
+        
 
 class EditRoomPage(tk.Frame):
     def __init__(self, parent, controller):
@@ -316,7 +481,7 @@ class EditRoomPage(tk.Frame):
         roomX = self.entEditRoomWidth.get()
         roomZ = self.entEditRoomLength.get()
         roomY = self.entEditRoomHeight.get()
-        #print(roomName)
+        
         # debugging^
         self.entEditRoomName.delete(0, tk.END)
         self.entEditRoomWidth.delete(0, tk.END)
@@ -500,11 +665,11 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorY.delete(0, tk.END)
         self.entEditSensorZ.delete(0, tk.END)
 
-        #print(controller.getValue()[1].id)
+        # print(controller.getValue()[1].id)
         if (controller.getValue()[1].id != None):
             controller.program.editSensor(controller.getValue()[1].id, name, sensorX, sensorY, sensorZ)
         else:
-            controller.program.addSensor(controller.getValue()[0], name, sensorX, sensorY, sensorZ)
+            controller.program.createSensor(controller.getValue()[0], name, sensorX, sensorY, sensorZ)
         controller.show_frame(StartPage)
 
     def discardAndExit(self, controller):
@@ -598,11 +763,11 @@ class EditObstaclePage(tk.Frame):
         self.entEditObstacleY2.delete(0, tk.END)
         self.entEditObstacleZ2.delete(0, tk.END)
 
-        #print(controller.getValue()[1].id)
+        # print(controller.getValue()[1].id)
         if(controller.getValue()[1].id != None):
             controller.program.editObstacle(controller.getValue()[1].id, name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
         else:
-            controller.program.addObstacle(controller.getValue()[0], name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
+            controller.program.createObstacle(controller.getValue()[0], name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
         controller.show_frame(StartPage)
 
         
