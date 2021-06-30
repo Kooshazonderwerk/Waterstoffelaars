@@ -21,7 +21,7 @@ class Plot2D:
         self.sensors = {}
         self.obstacles = {}
 
-        self.res = 2 #resolution, steps per dimension value
+        self.res = 3 #resolution, steps per dimension value
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
 
@@ -30,15 +30,27 @@ class Plot2D:
         cbar = self.fig.colorbar(cax, ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
         cbar.ax.set_yticklabels(['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1'])
 
-        self.sensorLocations = []
-        self.sensorValues = []
+        self.updateDimensions()
+        
+        if self.view == 0:
+            self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at height: " + str(self.slice))
+            self.fig.supxlabel("Length")
+            self.fig.supylabel("Width")
+        elif self.view == 1:
+            self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at width: " + str(self.slice))
+            self.fig.supxlabel("Length")
+            self.fig.supylabel("Height")
+        else:
+            self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at length: " + str(self.slice))
+            self.fig.supxlabel("Width")
+            self.fig.supylabel("Height")
+        
 
     def updateRoom(self, xAxis, yAxis):
         self.xAxis = xAxis
         self.yAxis = yAxis
     
     def addSensor(self, sensorId, x, y, z):
-        #print("wtf")
         self.sensors[int(sensorId)] = {}
         self.sensors[int(sensorId)]['x'] = x
         self.sensors[int(sensorId)]['y'] = y
@@ -80,7 +92,6 @@ class Plot2D:
     # method to draw data:
     def plotData(self):
         Z = []
-        print(self.sensors != {})
         if self.sensors != {}:
             for indey, yC in enumerate(self.y):
                 Z.append([])
@@ -94,16 +105,25 @@ class Plot2D:
 
     def animate(self, i):
         self.ax.clear()
-        self.updateDimensions()
         self.setRoomAxis()
         self.plotData()
 
     def setSlice(self, slice):
         self.slice = slice
+        self.updateTitle()
 
     def setP(self, p):
         self.p = p
-        
+        self.updateTitle()
+    
+    def updateTitle(self):
+        if self.view == 0:
+            self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at height: " + str(self.slice))
+        elif self.view == 1:
+            self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at width: " + str(self.slice))
+        else:
+            self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at length: " + str(self.slice))
+
     # def updateIDW(self):
     #     Z = []
     #     for indey, yC in enumerate(self.y):
