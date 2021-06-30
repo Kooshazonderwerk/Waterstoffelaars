@@ -10,12 +10,18 @@ from numpy import equal
 
 class Plot2D:
 
-    def __init__(self, room, view, slice, p):
+    def __init__(self, xAxis, yAxis, view, slice, p):
         self.view = view
         self.slice = slice
         self.p = p
+        
+        self.xAxis = xAxis
+        self.yAxis = yAxis
 
-        self.res = 3 #resolution, steps per dimension value
+        self.sensors = {}
+        self.obstacles = {}
+
+        self.res = 2 #resolution, steps per dimension value
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
 
@@ -26,47 +32,71 @@ class Plot2D:
 
         self.sensorLocations = []
         self.sensorValues = []
-        self.updateSensorLocations(room)
-        self.updateDimensions(room)
 
-    def update(self, room):
-        self.updateSensorLocations(room)
-        self.updateDimensions(room)
-        self.updateIDW()
+    def updateRoom(self, xAxis, yAxis):
+        self.xAxis = xAxis
+        self.yAxis = yAxis
+    
+    def addSensor(self, sensorId, x, y, z):
+        #print("wtf")
+        self.sensors[int(sensorId)] = {}
+        self.sensors[int(sensorId)]['x'] = x
+        self.sensors[int(sensorId)]['y'] = y
+        self.sensors[int(sensorId)]['z'] = z
+        self.sensors[int(sensorId)]['value'] = 0.
+    
+        # method to update a sensor in the graph
+    def updateSensor(self, sensorId, x, y, z):
+        self.sensors[int(sensorId)]['x'] = x
+        self.sensors[int(sensorId)]['y'] = y
+        self.sensors[int(sensorId)]['z'] = z
 
-    def updateSensorLocations(self, room):
-        self.sensorLocations = []
+    # method to add an obstacle to the graph
+    def addObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
+        self.obstacles[obstacleId] = {}
+        self.obstacles[obstacleId]['positions'] = (x1,y1,z1)
+        self.obstacles[obstacleId]['sizes'] = (x2,y2,z2)
 
-        for sensor in room.getSensorList():
-            sX, sY, sZ = sensor.getLocation()
-            if self.view == 0:
-                temp = [sX, sY, sZ]
-            elif self.view == 1:
-                temp = [sX, sZ, sY]
-            else:
-                temp = [sY, sZ, sX]
-            self.sensorLocations.append(temp)
-        
-        self.updateSensorValues(room)
-            
+    # method to update an obstacle in the graph
+    def updateObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
+        self.obstacles[obstacleId]['positions'] = (x1,y1,z1)
+        self.obstacles[obstacleId]['sizes'] = (x2,y2,z2)
+    
+    def updateSensorData(self, sensorId, sensorValue):
+        self.sensors[int(sensorId)]['value'] = sensorValue
+    
 
-    def updateSensorValues(self, room):
-        self.sensorValues = []
-
-        for sensor in room.getSensorList():
-            self.sensorValues.append(sensor.getValue())
-
-    def updateDimensions(self, room):
-        if self.view == 0:
-            self.l, self.w, h = room.getDimensions()
-        elif self.view == 1:
-            self.l, h, self.w = room.getDimensions()
-        else:
-            h, self.l, self.w = room.getDimensions()
-
-        self.x = np.linspace(0, self.l, self.l*self.res)
-        self.y = np.linspace(0, self.w, self.w*self.res)
+    def updateDimensions(self):
+        self.x = np.linspace(0, self.xAxis, self.xAxis*self.res)
+        self.y = np.linspace(0, self.yAxis, self.yAxis*self.res)
         self.X, self.Y = np.meshgrid(self.x, self.y)
+
+    # method draw room:
+    def setRoomAxis(self):
+        self.ax.set_xlim([0, self.xAxis])
+        self.ax.set_ylim([0, self.yAxis])
+        self.ax.set_aspect('equal', 'box')
+    
+    # method to draw data:
+    def plotData(self):
+        Z = []
+        print(self.sensors != {})
+        if self.sensors != {}:
+            for indey, yC in enumerate(self.y):
+                Z.append([])
+                for xC in self.x:
+                    arr = Z[int(indey)]         
+                    arr.append(self.calcPointValue(xC, yC))
+        else:
+            Z = self.X
+        self.ax.contourf(self.X, self.Y, Z, 50, cmap='viridis', vmin=0, vmax=1)
+
+
+    def animate(self, i):
+        self.ax.clear()
+        self.updateDimensions()
+        self.setRoomAxis()
+        self.plotData()
 
     def setSlice(self, slice):
         self.slice = slice
@@ -74,41 +104,41 @@ class Plot2D:
     def setP(self, p):
         self.p = p
         
-    def updateIDW(self):
-        Z = []
-        for indey, yC in enumerate(self.y):
-            Z.append([])
-            for xC in self.x:
-                arr = Z[int(indey)]                
-                arr.append(self.calcPointValue(xC, yC))
+    # def updateIDW(self):
+    #     Z = []
+    #     for indey, yC in enumerate(self.y):
+    #         Z.append([])
+    #         for xC in self.x:
+    #             arr = Z[int(indey)]                
+    #             arr.append(self.calcPointValue(xC, yC))
 
-        self.ax.clear()
-        # self.fig.colorbar()
-        self.ax.set_xlim([0, self.l])
-        self.ax.set_ylim([0, self.w])
-        self.ax.contourf(self.X, self.Y, Z, 50, cmap='viridis', vmin=0, vmax=1)
-        self.ax.set_aspect('equal', 'box')
+    #     self.ax.clear()
+    #     # self.fig.colorbar()
+    #     self.ax.set_xlim([0, self.l])
+    #     self.ax.set_ylim([0, self.w])
+    #     self.ax.contourf(self.X, self.Y, Z, 50, cmap='viridis', vmin=0, vmax=1)
+    #     self.ax.set_aspect('equal', 'box')
 
-        if self.view == 0:
-            self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at height: " + str(self.slice))
-            self.ax.set_xlabel("Length")
-            self.ax.set_ylabel("Width")
-        elif self.view == 1:
-            self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at width: " + str(self.slice))
-            self.ax.set_xlabel("Length")
-            self.ax.set_ylabel("Height")
-        else:
-            self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at length: " + str(self.slice))
-            self.ax.set_xlabel("Width")
-            self.ax.set_ylabel("Height")
+    #     if self.view == 0:
+    #         self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at height: " + str(self.slice))
+    #         self.ax.set_xlabel("Length")
+    #         self.ax.set_ylabel("Width")
+    #     elif self.view == 1:
+    #         self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at width: " + str(self.slice))
+    #         self.ax.set_xlabel("Length")
+    #         self.ax.set_ylabel("Height")
+    #     else:
+    #         self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at length: " + str(self.slice))
+    #         self.ax.set_xlabel("Width")
+    #         self.ax.set_ylabel("Height")
  
     def calcPointValue(self, x, y):
         
         A = 0
         B = 0
-        for index, sensor in enumerate(self.sensorLocations):
-            C = 1/np.power(self.distance(x, y, self.slice, sensor), self.p)
-            A += C*self.sensorValues[index]
+        for index, sensor in self.sensors.items():
+            C = 1/np.power(self.distance(x, y, self.slice, [sensor['x'],sensor['y'],sensor['z']]), self.p)
+            A += C*sensor['value']
             B += C
 
         return A / B
@@ -116,13 +146,9 @@ class Plot2D:
     def distance(self, x, y, z, other):
         return np.sqrt(np.sum(np.square(np.array([x, y, z]) - np.array(other))))
 
-    #def view2D(self, room, slice, p):       
-        
-        #ax.clim(0,1)
-        #ax.colorbar(ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
-
     def getFig(self):
         return self.fig
+
 
 
 class Plot3D:
