@@ -135,8 +135,6 @@ class StartPage(tk.Frame):
             "height": h,
             "length": l,
         }
-        btnReload = ttk.Button(self, text="reload", command=lambda: self.reload())
-        btnReload.grid(row=0, column=1, padx=5, pady=5)
 
         btnEditRoom = ttk.Button(frmRoomInfo, text="Edit room",
                                  command=lambda: self.controller.show_frame(EditRoomPage, self.roomInfo[room.id]))
