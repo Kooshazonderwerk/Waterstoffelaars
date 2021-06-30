@@ -19,6 +19,11 @@ class Plot2D:
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
 
+        data = [[0, 1],[0, 1]]
+        cax = self.ax.imshow(data, cmap='viridis')
+        cbar = self.fig.colorbar(cax, ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
+        cbar.ax.set_yticklabels(['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1'])
+
         self.sensorLocations = []
         self.sensorValues = []
         self.updateSensorLocations(room)
