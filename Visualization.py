@@ -21,7 +21,7 @@ class Plot2D:
         self.sensors = {}
         self.obstacles = {}
 
-        self.res = 3 #resolution, steps per dimension value
+        self.res = 50/xAxis #resolution, steps per dimension value
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
 
@@ -79,8 +79,8 @@ class Plot2D:
     
 
     def updateDimensions(self):
-        self.x = np.linspace(0, self.xAxis, self.xAxis*self.res)
-        self.y = np.linspace(0, self.yAxis, self.yAxis*self.res)
+        self.x = np.linspace(0, self.xAxis, int(self.xAxis*self.res))
+        self.y = np.linspace(0, self.yAxis, int(self.yAxis*self.res))
         self.X, self.Y = np.meshgrid(self.x, self.y)
 
     # method draw room:
@@ -105,6 +105,7 @@ class Plot2D:
 
     def animate(self, i):
         self.ax.clear()
+        #print(i)
         self.setRoomAxis()
         self.plotData()
 
@@ -123,34 +124,6 @@ class Plot2D:
             self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at width: " + str(self.slice))
         else:
             self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at length: " + str(self.slice))
-
-    # def updateIDW(self):
-    #     Z = []
-    #     for indey, yC in enumerate(self.y):
-    #         Z.append([])
-    #         for xC in self.x:
-    #             arr = Z[int(indey)]                
-    #             arr.append(self.calcPointValue(xC, yC))
-
-    #     self.ax.clear()
-    #     # self.fig.colorbar()
-    #     self.ax.set_xlim([0, self.l])
-    #     self.ax.set_ylim([0, self.w])
-    #     self.ax.contourf(self.X, self.Y, Z, 50, cmap='viridis', vmin=0, vmax=1)
-    #     self.ax.set_aspect('equal', 'box')
-
-    #     if self.view == 0:
-    #         self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at height: " + str(self.slice))
-    #         self.ax.set_xlabel("Length")
-    #         self.ax.set_ylabel("Width")
-    #     elif self.view == 1:
-    #         self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at width: " + str(self.slice))
-    #         self.ax.set_xlabel("Length")
-    #         self.ax.set_ylabel("Height")
-    #     else:
-    #         self.ax.set_title("IDW Hydrogen concentration, p: " + str(self.p) + ", at length: " + str(self.slice))
-    #         self.ax.set_xlabel("Width")
-    #         self.ax.set_ylabel("Height")
  
     def calcPointValue(self, x, y):
         

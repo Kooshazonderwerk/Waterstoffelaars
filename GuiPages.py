@@ -300,11 +300,14 @@ class StartPage(tk.Frame):
             if side == 0:
                 self.plot2dTop[room.id].setSlice(float(zEntry.get()))
                 self.plot2dTop[room.id].setP(float(pEntry.get()))
-
-                self.ani[room.id].event_source.stop()
+                    
+                for roomId in self.loadedRooms:
+                    self.ani[roomId].event_source.stop()
+                    self.aniTop[roomId].event_source.stop()
+                    self.aniLeft[roomId].event_source.stop()
+                    self.aniRight[roomId].event_source.stop()
+                
                 self.aniTop[room.id].event_source.start()
-                self.aniLeft[room.id].event_source.stop()
-                self.aniRight[room.id].event_source.stop()
 
                 canvasTop.draw()
                 frm2Dtop.tkraise()
@@ -312,10 +315,13 @@ class StartPage(tk.Frame):
                 self.plot2dLeft[room.id].setSlice(float(zEntry.get()))
                 self.plot2dLeft[room.id].setP(float(pEntry.get()))
 
-                self.ani[room.id].event_source.stop()
-                self.aniTop[room.id].event_source.stop()
+                for roomId in self.loadedRooms:
+                    self.ani[roomId].event_source.stop()
+                    self.aniTop[roomId].event_source.stop()
+                    self.aniLeft[roomId].event_source.stop()
+                    self.aniRight[roomId].event_source.stop()
+
                 self.aniLeft[room.id].event_source.start()
-                self.aniRight[room.id].event_source.stop()
                 
                 canvasLeft.draw()
                 frm2Dleft.tkraise()
@@ -323,19 +329,25 @@ class StartPage(tk.Frame):
                 self.plot2dRight[room.id].setSlice(float(zEntry.get()))
                 self.plot2dRight[room.id].setP(float(pEntry.get()))
 
-                self.ani[room.id].event_source.stop()
-                self.aniTop[room.id].event_source.stop()
-                self.aniLeft[room.id].event_source.stop()
+                for roomId in self.loadedRooms:
+                    self.ani[roomId].event_source.stop()
+                    self.aniTop[roomId].event_source.stop()
+                    self.aniLeft[roomId].event_source.stop()
+                    self.aniRight[roomId].event_source.stop()
+
                 self.aniRight[room.id].event_source.start()
                 
                 canvasRight.draw()
                 frm2Dright.tkraise()
             
             else:
+                for roomId in self.loadedRooms:
+                    self.ani[roomId].event_source.stop()
+                    self.aniTop[roomId].event_source.stop()
+                    self.aniLeft[roomId].event_source.stop()
+                    self.aniRight[roomId].event_source.stop()
+                    
                 self.ani[room.id].event_source.start()
-                self.aniTop[room.id].event_source.stop()
-                self.aniLeft[room.id].event_source.stop()
-                self.aniRight[room.id].event_source.stop()
 
                 frm3Dview.tkraise()
 
@@ -460,7 +472,7 @@ class StartPage(tk.Frame):
             self.plot3d[roomId].updateSensorData(int(sensorId), sensorValue)
             self.plot2dTop[roomId].updateSensorData(int(sensorId), sensorValue)
             self.plot2dLeft[roomId].updateSensorData(int(sensorId), sensorValue)
-        self.plot2dRight[roomId].updateSensorData(int(sensorId), sensorValue)
+            self.plot2dRight[roomId].updateSensorData(int(sensorId), sensorValue)
 
     def updateSensorValues(self, sensorValues):
         for sensorId, sensorValue in sensorValues.items():
