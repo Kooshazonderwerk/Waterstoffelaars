@@ -70,7 +70,6 @@ class Gui(tk.Tk):
 	'''takes a Sensor and Room object and passes it to the startpage frame'''
 	def updateSensorData(self, sensor, room):
 		startPage = self.frames[StartPage]
-		print(sensor.name)
 		startPage.loadSensor(sensor, room)
 	
 	'''takes a Room object and passes it to the startpage frame'''

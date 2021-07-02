@@ -55,7 +55,6 @@ class StartPage(tk.Frame):
 
     ''' takes a Room object and int and either adds it or updates an existing room.'''
     def loadRoom(self, room, roomId):
-        print("test")
         if roomId in self.loadedRooms:
             self.updateRoom(room)
         else: 
@@ -353,11 +352,9 @@ class StartPage(tk.Frame):
     ''' takes a Sensor object and Room object and either adds it or updates an existing sensor.'''
     def loadSensor(self, sensor, room):
         if room.id in self.loadedRooms:
-            #print("room is loaded")
             if sensor.id in self.loadedSensors:
                 self.updateSensor(sensor, room)
             else:
-                #print("going once")
                 self.addSensorToGui(sensor, room)
                 self.loadedSensors.append(sensor.id)
     
@@ -742,7 +739,6 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorY.delete(0, tk.END)
         self.entEditSensorZ.delete(0, tk.END)
 
-        # print(controller.getValue()[1].id)
         if (controller.getValue()[1].id != None):
             controller.program.editSensor(controller.getValue()[1].id, name, sensorX, sensorY, sensorZ)
         else:
@@ -839,7 +835,6 @@ class EditObstaclePage(tk.Frame):
         self.entEditObstacleY2.delete(0, tk.END)
         self.entEditObstacleZ2.delete(0, tk.END)
 
-        # print(controller.getValue()[1].id)
         if(controller.getValue()[1].id != None):
             controller.program.editObstacle(controller.getValue()[1].id, name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
         else:

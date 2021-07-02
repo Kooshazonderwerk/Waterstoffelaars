@@ -105,7 +105,6 @@ class Plot2D:
 
     def animate(self, i):
         self.ax.clear()
-        #print(i)
         self.setRoomAxis()
         self.plotData()
 
