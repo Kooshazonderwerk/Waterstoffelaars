@@ -46,18 +46,22 @@ class SocketClientHandler():
         sensorValues = json.loads(data)
         self.program.updateSensorValue(1, sensorValues)
     
+    '''receives room data from the server and sends it to the handle room method from the program'''
     def roomHandler(self, data):
         room = json.loads(data)
         self.program.handleRoom(room)
 
+    '''receives sensor data from the server and sends it to the handle sensor method from the program'''
     def sensorHandler(self, data):
         sensor = json.loads(data)
         self.program.handleSensor(sensor)
 
+    '''receives obstacle data from the server and sends it to the handle obstacle method from the program'''
     def obstacleHandler(self, data):
         obstacle = json.loads(data)
         self.program.handleObstacle(obstacle)
-    
+
+    '''receives sensor value data and sends it to program'''
     def sensorValueHandler(self, data):
         sensorValues = json.loads(data)
         self.program.updateSensorValues(sensorValues)
@@ -70,11 +74,13 @@ class SocketClientHandler():
     @sio.event
     def getAllRooms(self):
         self.sio.emit('getAllRooms')
-
+        
+    '''method sends ready event to the server to sends all data for this client'''
     @sio.event
     def ready(self):
         self.sio.emit('ready')
     
+    '''takes String, int, int, int and sends the data to the server in a dict to create a room on the server'''
     def createRoom(self, name, width, height, length):
         rawData = {
             'name': name,
@@ -85,6 +91,7 @@ class SocketClientHandler():
         data = json.dumps(rawData)
         self.sio.emit('createRoom', data)
 
+    '''takes int, String, int, int, int and sends the data to the server in a dict to edit a room on the server'''
     def editRoom(self, id, name, width, height, length):
         rawData = {
             'id': id,
@@ -97,7 +104,7 @@ class SocketClientHandler():
         self.sio.emit('editRoom', data)
 
 
-
+    '''takes int, String, int, int, int and sends the data to the server in a dict to create a room on the server'''
     def createSensor(self, roomId, name, x, y, z):
         rawData = {
             'room_id': roomId,
@@ -109,6 +116,7 @@ class SocketClientHandler():
         data = json.dumps(rawData)
         self.sio.emit('createSensor', data)
 
+    '''takes int, String, int, int, int, int, int, int and sends the data to the server in a dict to create a obstacle on the server'''
     def createObstacle(self, roomId, name, x1, y1, z1, x2, y2, z2):
         rawData = {
             'room_id': roomId,
@@ -123,6 +131,7 @@ class SocketClientHandler():
         data = json.dumps(rawData)
         self.sio.emit('createObstacle', data)
 
+    '''takes int, String, int, int, int and sends the data to the server in a dict to edit a sensor on the server'''
     def editSensor(self, id, name, x, y, z):
         rawData = {
             'id': id,
@@ -134,6 +143,7 @@ class SocketClientHandler():
         data = json.dumps(rawData)
         self.sio.emit('editSensor', data)
 
+    '''takes int, String, int, int, int, int, int, int and sends the data to the server in a dict to edit a obstacle on the server'''
     def editObstacle(self, id, name, x1, y1, z1, x2, y2, z2):
         rawData = {
             'id': id,
@@ -148,15 +158,6 @@ class SocketClientHandler():
         data = json.dumps(rawData)
         self.sio.emit('editObstacle', data)
 
+    ''''method disconnects the client from the server'''
     def quit(self):
         self.sio.disconnect()
-
-# socketconn = SocketClientHandler()
-# print('my sid is', socketconn.sio.sid)
-
-# socketconn.my_event('TestRoom')
-# socketconn.EnterRoom('TestRoom')
-# socketconn.createRoom(socketconn.sio.sid, 'test')
-# socketconn.deleteRoom(socketconn.sio.sid, 'test')
-# socketconn.EnterRoom(socketconn.sio.sid, 'test2')
-# socketconn.sendMessage('teleurgesteld')

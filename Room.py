@@ -19,10 +19,11 @@ class Room:
 		else:
 			print(str(type(sensor))+' object is not of Type Sensor') #ERRORHANDELING
 
-	'''returns a list with all sensors currently holded by the Room object'''
+	'''returns a dict with all sensors currently holded by the Room object'''
 	def getSensors(self):
 		return self.sensorList
 	
+	'''returns list with all obstacles currently holded by the Room object'''
 	def getSensorList(self):
 		response = []
 		for key, value in self.sensorList.items():
@@ -56,10 +57,11 @@ class Room:
 			return self.obstacleList[obstacleId]
 		return None
 
-	'''returns a list with all obstacles currently holded by the Room object'''
+	'''returns a dict with all obstacles currently holded by the Room object'''
 	def getObstacles(self):
 		return self.obstacleList
 
+	'''returns list with all obstacles currently holded by the Room object'''
 	def getObstacleList(self):
 		response = []
 		for key, value in self.obstacleList.items():
@@ -80,10 +82,11 @@ class Room:
 	def getId(self):
 		return self.id
 	
-
+	'''returns a string with the stored name'''
 	def getName(self):
 		return self.name
 	
+	'''takes a dict containing room info and updates itself'''
 	def update(self, room):
 		self.name = room['name']
 		self.lenght = room['length']

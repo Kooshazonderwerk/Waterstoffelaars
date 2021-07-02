@@ -20,9 +20,7 @@ class StartPage(tk.Frame):
         # add create button because it needs to be always accessible
         btnCreateRoom = ttk.Button(self, text="Create room", command=lambda: self.controller.show_frame(EditRoomPage))
         btnCreateRoom.grid(row=0, column=0, padx=5, pady=5)
-        
-        # self.zLayer = np.array([])
-        # self.pValue = np.array([])
+
 
         self.startSlice = 0.0
         self.startP = 5.0
@@ -55,7 +53,7 @@ class StartPage(tk.Frame):
         self.roomTabs.grid(row=1, column=0, sticky="nsew")
         self.controller.program.socketconn.ready()
 
-    # takes a room and room id and either adds it or updates an existing room.
+    ''' takes a Room object and int and either adds it or updates an existing room.'''
     def loadRoom(self, room, roomId):
         print("test")
         if roomId in self.loadedRooms:
@@ -64,7 +62,7 @@ class StartPage(tk.Frame):
             self.loadedRooms.append(roomId)
             self.addRoomToGui(room)
     
-    # takes a room id and a child frame and orders it acoriding to the given id.
+    '''takes a int and a child frame and orders it acoriding to the given id.'''
     def addToRoomTabs(self, roomId, child):
         position = roomId
         for key in self.roomFrames.keys():
@@ -77,7 +75,7 @@ class StartPage(tk.Frame):
         self.roomFrames[str(roomId)] = child
             
     
-    # takes a room and updates the loaded room in the startpage
+    ''' takes a Room object and updates the loaded room in the startpage'''
     def updateRoom(self, room):
         self.roomInfoText[room.id]['name'].set(f"room {str(room.name)}")
         self.roomTabs.tab(self.roomFrames[str(room.id)], text=f"room {str(room.id)}")
@@ -94,12 +92,8 @@ class StartPage(tk.Frame):
         self.plot2dLeft[room.id].updateRoom(l, h)
         self.plot2dRight[room.id].updateRoom(w, h)
         
-    # takes a room and loads it to the startpage.
+    ''' takes a Room object and loads it to the startpage.'''
     def addRoomToGui(self, room):
-        # This is so each room has a zLayer an pValue witch is used later in the program.
-        # self.zLayer = np.append(self.zLayer, 0)
-        # self.pValue = np.append(self.pValue, 5)
-        
         # used for the text on the room
         # not everything is used at the moment but in the future this info needs to be displayed.
         self.roomInfoText[room.id] = {
@@ -110,6 +104,7 @@ class StartPage(tk.Frame):
             "length": tk.StringVar(),
         }
         self.roomInfoText[room.id]['name'].set(f"room {str(room.name)}")
+
         # used to keep acces to the sensor frames for changes
         self.sensorFrames[str(room.id)] = {}
         self.obstacleFrames[str(room.id)] = {}
@@ -293,14 +288,13 @@ class StartPage(tk.Frame):
         zEntry.pack(fill=tk.Y, side=tk.LEFT)
         zEntry.insert(0, self.startSlice)
 
-        #visual = Visualization()
                 
         def show(side):
         
             if side == 0:
                 self.plot2dTop[room.id].setSlice(float(zEntry.get()))
                 self.plot2dTop[room.id].setP(float(pEntry.get()))
-                    
+                
                 for roomId in self.loadedRooms:
                     self.ani[roomId].event_source.stop()
                     self.aniTop[roomId].event_source.stop()
@@ -356,6 +350,7 @@ class StartPage(tk.Frame):
         self.aniLeft[room.id].event_source.stop()
         self.aniRight[room.id].event_source.stop()
     
+    ''' takes a Sensor object and Room object and either adds it or updates an existing sensor.'''
     def loadSensor(self, sensor, room):
         if room.id in self.loadedRooms:
             #print("room is loaded")
@@ -365,7 +360,9 @@ class StartPage(tk.Frame):
                 #print("going once")
                 self.addSensorToGui(sensor, room)
                 self.loadedSensors.append(sensor.id)
+    
 
+    ''' takes a Sensor object and updates the loaded Sensor in the startpage'''
     def updateSensor(self, sensor, room):
         self.sensorInfoTexts[sensor.id]['name'].set(sensor.name)
         self.btnEditSensor[sensor.id].configure(command=lambda: self.loadSensorEditPage(room, sensor))
@@ -375,6 +372,7 @@ class StartPage(tk.Frame):
         self.plot2dLeft[room.id].updateSensor(sensor.id, x, z, y)
         self.plot2dRight[room.id].updateSensor(sensor.id, y, z, x)
 
+    ''' takes a Sensor object and loads it to the startpage.'''
     def addSensorToGui(self, sensor, room):
         self.sensorFrames[str(room.id)][str(sensor.id)] = ttk.Frame(self.scrollable_frame_sensors[room.id], width=100, height=10, relief=tk.GROOVE, borderwidth=5)
         text = tk.StringVar()
@@ -405,7 +403,7 @@ class StartPage(tk.Frame):
         self.plot2dLeft[room.id].addSensor(sensor.id, x, z, y)
         self.plot2dRight[room.id].addSensor(sensor.id, y, z, x)
 
-
+    ''' takes a Obstacle object and Room object and either adds it or updates an existing Obstacle.'''
     def loadObstacle(self, obstacle, room):
         if room.id in self.loadedRooms:
             if obstacle.id in self.loadedObstacles:
@@ -414,6 +412,7 @@ class StartPage(tk.Frame):
                 self.addObstacleToGui(obstacle, room)
                 self.loadedObstacles.append(obstacle.id)
 
+    ''' takes a Obstacle object and updates the loaded Obstacle in the startpage'''
     def updateObstacle(self, obstacle, room):
         self.obstacleInfoTexts[obstacle.id]['name'].set(obstacle.name)
         x1, y1, z1, x2, y2, z2 = obstacle.getLocation()
@@ -421,7 +420,8 @@ class StartPage(tk.Frame):
         self.plot2dTop[room.id].updateObstacle(obstacle.id, x1, y1, z1, x2, y2, z2)
         self.plot2dLeft[room.id].updateObstacle(obstacle.id, x1, y1, z1, x2, y2, z2)
         self.plot2dRight[room.id].updateObstacle(obstacle.id, x1, y1, z1, x2, y2, z2)
-    
+
+    ''' takes a Obstacle object and loads it to the startpage.'''
     def addObstacleToGui(self, obstacle, room):
         obstacleInfo = {
             'name': tk.StringVar() 
@@ -446,10 +446,11 @@ class StartPage(tk.Frame):
         self.plot2dLeft[room.id].addObstacle(obstacle.id, x1, y1, z1, x2, y2, z2)
         self.plot2dRight[room.id].addObstacle(obstacle.id, x1, y1, z1, x2, y2, z2)
 
-
+    '''takes a dict and can be used to send data to the startpage from another page'''
     def post(self, data):
         pass
 
+    '''takes a Room and Sensor Object and changes to the sensorEditpage with this information'''
     def loadSensorEditPage(self, room, sensor):
         self.controller.setValue([str(room.id), sensor])
         info = {
@@ -457,7 +458,8 @@ class StartPage(tk.Frame):
             'room': room
         }
         self.controller.show_frame(EditSensorPage, info)
-
+        
+    '''takes a Room and Obstacle Object and changes to the ObstacleEditPage with this information'''
     def loadObstacleEditPage(self, room, obstacle):
         self.controller.setValue([str(room.id), obstacle])
         info = {
@@ -466,6 +468,7 @@ class StartPage(tk.Frame):
         }
         self.controller.show_frame(EditObstaclePage, info)
 
+    '''takes an int, float and int and changes the value of a sensor on the startPage'''
     def updateSensorValue(self, sensorId, sensorValue, roomId):
         if str(sensorId) in self.sensorvalues:
             self.sensorvalues[str(sensorId)].set("{:.4f}".format(sensorValue))
@@ -474,9 +477,10 @@ class StartPage(tk.Frame):
             self.plot2dLeft[roomId].updateSensorData(int(sensorId), sensorValue)
             self.plot2dRight[roomId].updateSensorData(int(sensorId), sensorValue)
 
+    '''takes a dict of sensor values with as key the sensor id and for each sensor updates the sensor value'''
     def updateSensorValues(self, sensorValues):
         for sensorId, sensorValue in sensorValues.items():
-            self.updateSensorValue(sensorId, sensorValue['value'], sensorValue['room_id'])
+            self.updateSensorValue(int(sensorId), sensorValue['value'], sensorValue['room_id'])
 
     
         
@@ -529,6 +533,7 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomLength.bind('<KeyRelease>', self.updateAxisEvent)
         self.entEditRoomHeight.bind('<KeyRelease>', self.updateAxisEvent)
 
+    '''method returns a dict with the user input from the input fields'''
     def getInput(self):
         roomInput = {
             'roomName': self.entEditRoomName.get(),
@@ -538,6 +543,7 @@ class EditRoomPage(tk.Frame):
         }
         return roomInput
 
+    '''method takes a Gui object and sends the information to the program and loads the startpage'''
     def saveAndExit(self, controller):
         roomName = self.entEditRoomName.get()
         roomX = self.entEditRoomWidth.get()
@@ -558,6 +564,7 @@ class EditRoomPage(tk.Frame):
 
         controller.show_frame(StartPage)
 
+    '''method takes a Gui object and clears all field and returns to the startpage whithout sending information to the startpage'''
     def discardAndExit(self, controller):
         self.entEditRoomName.delete(0, tk.END)
         self.entEditRoomWidth.delete(0, tk.END)
@@ -565,6 +572,7 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomHeight.delete(0, tk.END)
         controller.show_frame(StartPage)
 
+    '''takes a dict and uses it to set the input fields for when its an edit'''
     def post(self, data):
         self.id = data['id']
         self.create = False
@@ -574,6 +582,7 @@ class EditRoomPage(tk.Frame):
         self.entEditRoomHeight.insert(0, data['height'])
         self.updateAxis(data['width'], data['length'], data['height'])
 
+    '''creates and adds a 3d field to the edit page to see an example view of how to room looks'''
     def load3dview(self):
 
         # 3D view
@@ -594,15 +603,17 @@ class EditRoomPage(tk.Frame):
         frm3Dview.grid(row=1, column=1, padx=5, pady=5)
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
+    '''takes int, int, int containing the dimensions of the room and changes it in the preview'''
     def updateAxis(self, width, length, height):
         self.ax.set_xlim([0, width])
         self.ax.set_ylim([0, length])
         self.ax.set_zlim([0, height])
         self.ax.set_box_aspect(aspect=(width, length, height))
 
-    # this exists because the event handeler requires that the event parameter exists
+    '''this exists because the event handeler requires that the event parameter exists'''
     def updateAxisEvent(self, event):
         roomInput = self.getInput()
+        #checks if all values are filled to prevent errors
         if (roomInput['width'].isnumeric() and roomInput['length'].isnumeric() and roomInput['height'].isnumeric()):
             self.updateAxis(float(roomInput['width']), float(roomInput['length']), float(roomInput['height']))
         else:
@@ -657,6 +668,7 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorY.bind('<KeyRelease>', self.plotSensorEvent)
         self.entEditSensorZ.bind('<KeyRelease>', self.plotSensorEvent)
 
+    '''creates and adds a 3d field to the edit page to see an example view of how to room looks'''
     def load3dview(self):
 
         SensorX = 0
@@ -682,7 +694,9 @@ class EditSensorPage(tk.Frame):
         frm3Dview.grid(row=1, column=1, padx=5, pady=5)
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
+    '''method uses the current room containing the sensor and changes it in the preview'''
     def setRoomAxis(self):
+        # this is for at the start of the program when no room is present to prevent errors
         if (self.room == None):
             x1, y1, z1 = (500, 500, 500)
         else:
@@ -692,11 +706,13 @@ class EditSensorPage(tk.Frame):
         self.ax.set_zlim([0, z1])
         self.ax.set_box_aspect(aspect=(x1, y1, z1))
 
+    '''takes int, int, int and plots the sensor to preview'''
     def plotSensor(self, x, y, z):
         self.ax.clear()
         self.setRoomAxis()
         plot = self.ax.plot(x, y, z, 'ro')
 
+    '''this exists because the event handeler requires that the event parameter exists'''
     def plotSensorEvent(self, event):
         sensorInput = self.getInput()
         if (sensorInput['x'].isnumeric() and sensorInput['y'].isnumeric() and sensorInput['z'].isnumeric()):
@@ -704,6 +720,7 @@ class EditSensorPage(tk.Frame):
         else:
             self.plotSensor(1, 1, 1)
 
+    '''method returns a dict with the user input from the input fields'''
     def getInput(self):
         sensorInfo = {
             'name': self.entEditSensorName.get(),
@@ -713,9 +730,7 @@ class EditSensorPage(tk.Frame):
         }
         return sensorInfo
 
-    def insert(self, sensor):
-        self.entEditSensorName.insert(0, sensor.name)
-
+    '''method takes a Gui object and sends the information to the program and loads the startpage'''
     def saveAndExit(self, controller):
         name = self.entEditSensorName.get()
         sensorX = self.entEditSensorX.get()
@@ -734,6 +749,7 @@ class EditSensorPage(tk.Frame):
             controller.program.createSensor(controller.getValue()[0], name, sensorX, sensorY, sensorZ)
         controller.show_frame(StartPage)
 
+    '''method takes a Gui object and clears all field and returns to the startpage whithout sending information to the startpage'''
     def discardAndExit(self, controller):
         self.entEditSensorName.delete(0, tk.END)
         self.entEditSensorX.delete(0, tk.END)
@@ -741,6 +757,7 @@ class EditSensorPage(tk.Frame):
         self.entEditSensorZ.delete(0, tk.END)
         controller.show_frame(StartPage)
 
+    '''takes a dict and uses it to set the room and if exist the input fields for when its an edit'''
     def post(self, info):
         self.room = info['room']
         self.plotSensor(info['sensor'].x, info['sensor'].y, info['sensor'].z)
@@ -804,10 +821,7 @@ class EditObstaclePage(tk.Frame):
 
         frmEditObstacleSaveOrDiscard.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
-
-    def insert(self, obstacle):
-        self.entEditObstacleName.insert(0, obstacle.name)
-    
+    '''method takes a Gui object and sends the information to the program and loads the startpage'''
     def saveAndExit(self, controller):
         name = self.entEditObstacleName.get()
         obstacleX1 = self.entEditObstacleX1.get()
@@ -832,7 +846,7 @@ class EditObstaclePage(tk.Frame):
             controller.program.createObstacle(controller.getValue()[0], name, obstacleX1, obstacleY1, obstacleZ1, obstacleX2, obstacleY2, obstacleZ2)
         controller.show_frame(StartPage)
 
-        
+    '''method takes a Gui object and clears all field and returns to the startpage whithout sending information to the startpage'''
     def discardAndExit(self, controller):
         self.entEditObstacleName.delete(0, tk.END)
         self.entEditObstacleX1.delete(0, tk.END)
@@ -843,6 +857,7 @@ class EditObstaclePage(tk.Frame):
         self.entEditObstacleZ2.delete(0, tk.END)
         controller.show_frame(StartPage)
 
+    '''takes a dict and uses it to set the room and if exist the input fields for when its an edit'''
     def post(self, info):
         self.room = info['room']
 

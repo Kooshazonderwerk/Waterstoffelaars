@@ -161,15 +161,18 @@ class Plot3D:
         self.ax.set_facecolor('xkcd:brown')
         self.updateRoom(l, w, h)
     
+    '''returns a Figure that is holded by the Plot3D object'''
     def getFig(self):
         return self.fig
 
-    # method to update the room
+    '''takes int, int, int and updates the dimensions on the Plot3D object to set te room size'''
     def updateRoom(self, l, w, h):
         self.l = l
         self.w = w
         self.h = h
-        
+
+
+    '''takes int, int, int and updates the plot room size'''
     def setRoomAxis(self, l, w, h):
         self.ax.grid(False)
         self.ax.set_facecolor('xkcd:brown')
@@ -178,18 +181,17 @@ class Plot3D:
         self.ax.set_zlim([0, h])
         self.ax.set_box_aspect(aspect=(l, w, h))
 
-    # method to add a sensor to the graph
+    '''takes int, int, int, int and adds it to a list of sensors'''
     def addSensor(self, sensorId, x, y, z):
-        #print("wtf")
         self.sensors[int(sensorId)] = {}
         self.sensors[int(sensorId)]['x'] = x
         self.sensors[int(sensorId)]['y'] = y
         self.sensors[int(sensorId)]['z'] = z
         self.sensors[int(sensorId)]['value'] = 0.
     
+    '''plots all sensors on the Plot3D object'''
     def plotSensors(self):
         for sensorId, sensorData in self.sensors.items():
-            #print("test")
             if sensorData['value'] < 0.1:
                 self.ax.plot(sensorData['x'], sensorData['y'], sensorData['z'], 'o',color='#95A5A6',markersize=5)
             if sensorData['value'] > 0.1:
@@ -202,34 +204,34 @@ class Plot3D:
                 self.ax.plot(sensorData['x'], sensorData['y'], sensorData['z'], 'o',color='r',markersize=60)
                 
 
-    # method to update a sensor in the graph
+    '''takes int, int, int, int and updates the sensor with the given sensor id in the list with sensors'''
     def updateSensor(self, sensorId, x, y, z):
         self.sensors[int(sensorId)]['x'] = x
         self.sensors[int(sensorId)]['y'] = y
         self.sensors[int(sensorId)]['z'] = z
 
-    # method to add an obstacle to the graph
+    '''takes int, int, int, int and adds it to a list of obstacles'''
     def addObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
         self.obstacles[obstacleId] = {}
         self.obstacles[obstacleId]['positions'] = (x1,y1,z1)
         self.obstacles[obstacleId]['sizes'] = (x2,y2,z2)
 
-    # method to update an obstacle in the graph
+    '''takes int, int, int, int and updates the obstacle with the given obstacle id in the list with obstacles'''
     def updateObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
         self.obstacles[obstacleId]['positions'] = (x1,y1,z1)
         self.obstacles[obstacleId]['sizes'] = (x2,y2,z2)
     
+    '''plots all obstacles on the Plot3D object'''
     def plotObstacles(self):
         for obstacleId, obstacle in self.obstacles.items():
             self.plotCubeAt(pos=obstacle['positions'], size=obstacle['sizes'], ax=self.ax)
 
-    # method to update sensor values in the graph
+    '''takes int, float and updates the value of a sensor with the given sensor id'''
     def updateSensorData(self, sensorId, sensorValue):
         self.sensors[int(sensorId)]['value'] = sensorValue
 
-
+    '''takes a tuple(int,int,int), tuple(int,int,int) and generates data for plotting a obstacle'''
     def cuboid_data(self, o, size=(1,1,1)):
-        #print(size)
         l, w, h = size
         x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],
              [o[0], o[0] + l, o[0] + l, o[0], o[0]],
@@ -245,6 +247,7 @@ class Plot3D:
              [o[2], o[2], o[2] + h, o[2] + h, o[2]]]
         return np.array(x), np.array(y), np.array(z)
 
+    '''takes a tuple(int,int,int), tuple(int,int,int), Axis object with the current plot info and plots a obstacle'''
     def plotCubeAt(self, pos=(0, 0, 0), size=(1, 1, 1), ax=None, **kwargs):
         # Plotting a cube element at position pos
         if ax !=None:
@@ -252,9 +255,9 @@ class Plot3D:
             plot = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
             return plot
 
+    '''method is used to animate continues data'''
     def animate(self, i):
         self.ax.clear()
-        #print(self.sensors)
         self.setRoomAxis(self.l, self.w, self.h)
         self.plotSensors()
         self.plotObstacles()
