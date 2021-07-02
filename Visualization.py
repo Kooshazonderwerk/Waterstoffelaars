@@ -14,6 +14,9 @@ class Plot2D:
         self.view = view
         self.slice = slice
         self.p = p
+
+        #matplotlib colormap that's being used by the colorbar and the contourf
+        self.color = 'viridis'
         
         self.xAxis = xAxis
         self.yAxis = yAxis
@@ -21,17 +24,18 @@ class Plot2D:
         self.sensors = {}
         self.obstacles = {}
 
-        self.res = 50/xAxis #resolution, steps per dimension value
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
 
+        #adds a colorbar to the graph, with a temp array to make it go fully from 0 to 1
         data = [[0, 1],[0, 1]]
-        cax = self.ax.imshow(data, cmap='viridis')
+        cax = self.ax.imshow(data, cmap=self.color)
         cbar = self.fig.colorbar(cax, ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
         cbar.ax.set_yticklabels(['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1'])
 
         self.updateDimensions()
         
+        #adds the labels, specific per side from which it's viewed
         if self.view == 0:
             self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at height: " + str(self.slice))
             self.fig.supxlabel("Length")
@@ -57,19 +61,16 @@ class Plot2D:
         self.sensors[int(sensorId)]['z'] = z
         self.sensors[int(sensorId)]['value'] = 0.
     
-        # method to update a sensor in the graph
     def updateSensor(self, sensorId, x, y, z):
         self.sensors[int(sensorId)]['x'] = x
         self.sensors[int(sensorId)]['y'] = y
         self.sensors[int(sensorId)]['z'] = z
 
-    # method to add an obstacle to the graph
     def addObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
         self.obstacles[obstacleId] = {}
         self.obstacles[obstacleId]['positions'] = (x1,y1,z1)
         self.obstacles[obstacleId]['sizes'] = (x2,y2,z2)
 
-    # method to update an obstacle in the graph
     def updateObstacle(self, obstacleId, x1, y1, z1, x2, y2, z2):
         self.obstacles[obstacleId]['positions'] = (x1,y1,z1)
         self.obstacles[obstacleId]['sizes'] = (x2,y2,z2)
@@ -77,19 +78,20 @@ class Plot2D:
     def updateSensorData(self, sensorId, sensorValue):
         self.sensors[int(sensorId)]['value'] = sensorValue
     
-
+    #creates the meshgrid arrays for the contourf method, linspace creates an array from 0 to the room length, in 50 steps
     def updateDimensions(self):
-        self.x = np.linspace(0, self.xAxis, int(self.xAxis*self.res))
-        self.y = np.linspace(0, self.yAxis, int(self.yAxis*self.res))
+        self.x = np.linspace(0, self.xAxis, 50)
+        self.y = np.linspace(0, self.yAxis, 50)
         self.X, self.Y = np.meshgrid(self.x, self.y)
 
-    # method draw room:
+    # sets the axis to the correct length and sets the aspect ratio to an equally spaced x and y axis
     def setRoomAxis(self):
         self.ax.set_xlim([0, self.xAxis])
         self.ax.set_ylim([0, self.yAxis])
         self.ax.set_aspect('equal', 'box')
     
-    # method to draw data:
+    # method to draw data, fills the 2d array "Z" with the corresponding values and contourf draws the image
+    # if/else to catch empty sensor list, otherwise calcPointValue would error with a divide by 0
     def plotData(self):
         Z = []
         if self.sensors != {}:
@@ -100,9 +102,9 @@ class Plot2D:
                     arr.append(self.calcPointValue(xC, yC))
         else:
             Z = self.X
-        self.ax.contourf(self.X, self.Y, Z, 50, cmap='viridis', vmin=0, vmax=1)
+        self.ax.contourf(self.X, self.Y, Z, 50, cmap=self.color, vmin=0, vmax=1)
 
-
+    #method used to animate the plot. "i" is the frame number given by the animate function, but not needed here
     def animate(self, i):
         self.ax.clear()
         self.setRoomAxis()
@@ -116,6 +118,7 @@ class Plot2D:
         self.p = p
         self.updateTitle()
     
+    #updates the title above the plot to correctly display the p value and the "slice"
     def updateTitle(self):
         if self.view == 0:
             self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at height: " + str(self.slice))
@@ -124,6 +127,8 @@ class Plot2D:
         else:
             self.fig.suptitle("IDW Hydrogen concentration, p: " + str(self.p) + ", at length: " + str(self.slice))
  
+    #returns the inverse distance weighted value of the x, y location in relation to the sensorvalues
+    # p is an IDW variable that specifies the importance of the closest sensor. A larger p value means that closer sensors are more important
     def calcPointValue(self, x, y):
         
         A = 0
@@ -135,9 +140,11 @@ class Plot2D:
 
         return A / B
 
+    #returns the distance between the x, y, z and a list of an x, y and z
     def distance(self, x, y, z, other):
         return np.sqrt(np.sum(np.square(np.array([x, y, z]) - np.array(other))))
 
+    #returns the figure that contains the plot
     def getFig(self):
         return self.fig
 

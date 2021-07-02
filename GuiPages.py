@@ -195,6 +195,7 @@ class StartPage(tk.Frame):
         canvas = FigureCanvasTkAgg(self.plot3d[room.id].getFig(), master=frm3Dview)
         canvas.draw()
 
+        #creates the animation function
         self.ani[room.id] = animation.FuncAnimation(self.plot3d[room.id].getFig(), self.plot3d[room.id].animate, interval=500, blit=False)
         
 
@@ -291,9 +292,11 @@ class StartPage(tk.Frame):
         def show(side):
         
             if side == 0:
+                #gets the layer and p value from the user entry boxes
                 self.plot2dTop[room.id].setSlice(float(zEntry.get()))
                 self.plot2dTop[room.id].setP(float(pEntry.get()))
                 
+                #stops all the animations, to prevent lag
                 for roomId in self.loadedRooms:
                     self.ani[roomId].event_source.stop()
                     self.aniTop[roomId].event_source.stop()
@@ -304,6 +307,7 @@ class StartPage(tk.Frame):
 
                 canvasTop.draw()
                 frm2Dtop.tkraise()
+
             elif side == 1:
                 self.plot2dLeft[room.id].setSlice(float(zEntry.get()))
                 self.plot2dLeft[room.id].setP(float(pEntry.get()))
@@ -318,6 +322,7 @@ class StartPage(tk.Frame):
                 
                 canvasLeft.draw()
                 frm2Dleft.tkraise()
+                
             elif side == 2:
                 self.plot2dRight[room.id].setSlice(float(zEntry.get()))
                 self.plot2dRight[room.id].setP(float(pEntry.get()))
